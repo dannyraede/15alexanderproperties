@@ -5,15 +5,34 @@ const captureBtn = document.getElementById("captureBtn")
 const fileInput = document.getElementById("fileInput")
 const resultContainer = document.getElementById("resultContainer")
 
+const switchCameraBtn = document.getElementById("switchCameraBtn");
+let currentFacingMode = "environment";
+
 // Function to initialize the camera
-async function initCamera() {
+async function initCamera(facingMode = "environment") {
 	try {
-		const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-		video.srcObject = stream
+		const stream = await navigator.mediaDevices.getUserMedia({ 
+			video: { facingMode: facingMode }
+		});
+		video.srcObject = stream;
+		currentFacingMode = facingMode;
 	} catch (err) {
 		console.error("Error accessing camera:", err)
 		displayError("Error accessing camera. Please check your permissions.")
 	}
+}
+
+// Function to switch camera
+async function switchCamera() {
+	const newFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+	const currentStream = video.srcObject;
+	
+	// Stop all tracks on the current stream
+	if (currentStream) {
+		currentStream.getTracks().forEach(track => track.stop());
+	}
+	
+	await initCamera(newFacingMode);
 }
 
 // Function to capture photo
@@ -131,6 +150,19 @@ function displayLoading(message) {
 // Event listeners
 captureBtn.addEventListener("click", capturePhoto)
 fileInput.addEventListener("change", handleFileUpload)
+switchCameraBtn.addEventListener("click", switchCamera)
 
 // Initialize camera when the page loads
 initCamera()
+
+// Function to check if the device is mobile
+function isMobile() {
+	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Show/hide switch camera button based on device type
+if (isMobile()) {
+	switchCameraBtn.style.display = "block";
+} else {
+	switchCameraBtn.style.display = "none";
+}
