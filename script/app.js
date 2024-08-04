@@ -114,16 +114,18 @@
 				body: formData,
 			})
 
+			// Stop the scanning animation immediately after receiving the response
+			stopScanningAnimation()
+
 			if (!response.ok) {
 				throw new Error("Upload and analysis failed")
 			}
 
 			const results = await response.json()
-			stopScanningAnimation()
 			displayResults(results)
 		} catch (error) {
 			console.error("Error processing image:", error)
-			stopScanningAnimation()
+			stopScanningAnimation() // Ensure animation stops even if there's an error
 			displayError("Error processing image. Please try again.")
 		}
 	}
