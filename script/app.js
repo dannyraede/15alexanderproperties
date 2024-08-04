@@ -5,17 +5,17 @@ const captureBtn = document.getElementById("captureBtn")
 const fileInput = document.getElementById("fileInput")
 const resultContainer = document.getElementById("resultContainer")
 
-const switchCameraBtn = document.getElementById("switchCameraBtn");
-let currentFacingMode = "environment";
+const switchCameraBtn = document.getElementById("switchCameraBtn")
+let currentFacingMode = "environment"
 
 // Function to initialize the camera
 async function initCamera(facingMode = "environment") {
 	try {
-		const stream = await navigator.mediaDevices.getUserMedia({ 
-			video: { facingMode: facingMode }
-		});
-		video.srcObject = stream;
-		currentFacingMode = facingMode;
+		const stream = await navigator.mediaDevices.getUserMedia({
+			video: { facingMode: facingMode },
+		})
+		video.srcObject = stream
+		currentFacingMode = facingMode
 	} catch (err) {
 		console.error("Error accessing camera:", err)
 		displayError("Error accessing camera. Please check your permissions.")
@@ -24,15 +24,15 @@ async function initCamera(facingMode = "environment") {
 
 // Function to switch camera
 async function switchCamera() {
-	const newFacingMode = currentFacingMode === "environment" ? "user" : "environment";
-	const currentStream = video.srcObject;
-	
+	const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
+	const currentStream = video.srcObject
+
 	// Stop all tracks on the current stream
 	if (currentStream) {
-		currentStream.getTracks().forEach(track => track.stop());
+		currentStream.getTracks().forEach((track) => track.stop())
 	}
-	
-	await initCamera(newFacingMode);
+
+	await initCamera(newFacingMode)
 }
 
 // Function to capture photo
@@ -52,68 +52,52 @@ function handleFileUpload(event) {
 	}
 }
 
-// Function to upload photo to backend
+// Function to upload photo and analyze
 async function uploadPhoto(blob) {
 	try {
 		const formData = new FormData()
 		formData.append("image", blob, "building.jpg")
 
-		displayLoading("Uploading image...")
+		displayLoading("Uploading and analyzing image...")
 
-		const response = await fetch("/api/upload", {
+		const response = await fetch("/api/mainOrchestrator", {
 			method: "POST",
 			body: formData,
 		})
 
 		if (!response.ok) {
-			throw new Error("Upload failed")
-		}
-
-		const { imageUrl } = await response.json()
-		analyzeImage(imageUrl)
-	} catch (error) {
-		console.error("Error uploading image:", error)
-		displayError("Error uploading image. Please try again.")
-	}
-}
-
-// Function to send image for analysis
-async function analyzeImage(imageUrl) {
-	try {
-		displayLoading("Analyzing image...")
-
-		const response = await fetch("/api/analyze", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ imageUrl }),
-		})
-
-		if (!response.ok) {
-			throw new Error("Analysis failed")
+			throw new Error("Upload and analysis failed")
 		}
 
 		const results = await response.json()
 		displayResults(results)
 	} catch (error) {
-		console.error("Error analyzing image:", error)
-		displayError("Error analyzing image. Please try again.")
+		console.error("Error processing image:", error)
+		displayError("Error processing image. Please try again.")
 	}
 }
 
 // Function to display results
 function displayResults(results) {
 	let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
-	for (const [pattern, data] of Object.entries(results.patterns)) {
-		resultsHTML += `
-            <div class="mb-2">
-                <span class="font-semibold">${pattern.replace("_", " ")}:</span> 
-                ${data.present ? "✅" : "❌"}
-                <p class="text-sm">${data.description || ""}</p>
-            </div>
-        `
-	}
+	resultsHTML += `
+		<div class="mb-2">
+			<span class="font-semibold">Image URL:</span> 
+			<a href="${results.imageUrl}" target="_blank" class="text-blue-500 hover:underline">${results.imageUrl}</a>
+		</div>
+		<div class="mb-2">
+			<span class="font-semibold">Chain of Thought Analysis:</span>
+			<p class="text-sm">${results.cotAnalysis}</p>
+		</div>
+		<div class="mb-2">
+			<span class="font-semibold">Determination:</span>
+			<p class="text-sm">${results.determination}</p>
+		</div>
+		<div class="mb-2">
+			<span class="font-semibold">Deep Analysis:</span>
+			<p class="text-sm">${results.deepAnalysis}</p>
+		</div>
+	`
 
 	resultContainer.innerHTML = resultsHTML
 }
@@ -157,12 +141,12 @@ initCamera()
 
 // Function to check if the device is mobile
 function isMobile() {
-	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 }
 
 // Show/hide switch camera button based on device type
 if (isMobile()) {
-	switchCameraBtn.style.display = "block";
+	switchCameraBtn.style.display = "block"
 } else {
-	switchCameraBtn.style.display = "none";
+	switchCameraBtn.style.display = "none"
 }
