@@ -1,9 +1,5 @@
 import { del, list } from '@vercel/blob';
 
-export const config = {
-  runtime: 'edge',
-};
-
 async function deleteOldBlobs(cursor = null) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -31,21 +27,22 @@ async function deleteOldBlobs(cursor = null) {
   return deletedCount;
 }
 
-export default async function handler(request) {
-  if (request.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+// Modify the handler function
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
   }
 
-  const authHeader = request.headers.get('authorization');
+  const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 });
+    return res.status(401).send('Unauthorized');
   }
 
   try {
     const deletedCount = await deleteOldBlobs();
-    return new Response(`Deleted ${deletedCount} old blobs`, { status: 200 });
+    return res.status(200).send(`Deleted ${deletedCount} old blobs`);
   } catch (error) {
     console.error('Cleanup error:', error);
-    return new Response('Cleanup failed', { status: 500 });
+    return res.status(500).send('Cleanup failed');
   }
 }
