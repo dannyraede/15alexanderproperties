@@ -43,8 +43,9 @@ export async function uploadImage(req) {
   console.log('File path:', file.filepath);
 
   console.log('Resizing image');
+  let resizedImageBuffer;
   try {
-    const resizedImageBuffer = await sharp(file.filepath)
+    resizedImageBuffer = await sharp(file.filepath)
       .resize(768, 768, { fit: 'inside', withoutEnlargement: true })
       .toBuffer();
     console.log('Image resized successfully');
