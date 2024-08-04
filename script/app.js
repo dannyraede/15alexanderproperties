@@ -101,11 +101,19 @@
 	}
 
 	// Function to upload photo and analyze
+	let isUploading = false
 	let uploadCount = 0
 
 	async function uploadPhoto(blob) {
+		if (isUploading) {
+			console.log("Upload already in progress, ignoring this call")
+			return
+		}
+
+		isUploading = true
 		uploadCount++
 		console.log(`uploadPhoto function called (Count: ${uploadCount})`, new Date().toISOString())
+
 		try {
 			console.log("Creating FormData")
 			const formData = new FormData()
@@ -139,8 +147,10 @@
 			console.error("Error in uploadPhoto:", error.message)
 			stopScanningAnimation()
 			displayError("Error processing image. Please try again.")
+		} finally {
+			isUploading = false
+			console.log(`uploadPhoto function completed (Count: ${uploadCount})`, new Date().toISOString())
 		}
-		console.log(`uploadPhoto function completed (Count: ${uploadCount})`, new Date().toISOString())
 	}
 
 	// Add these new functions
