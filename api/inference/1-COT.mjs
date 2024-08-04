@@ -38,6 +38,8 @@ async function generateCOTAnalysis(imageUrl) {
 	console.log("Preparing system prompt")
 	const systemPrompt = mergeDefinitions(COT_SYSTEM_PROMPT)
 
+	console.log("Image URL:", imageUrl) // Log the image URL for debugging
+
 	const messages = [
 		{ role: "system", content: systemPrompt },
 		{
@@ -63,7 +65,7 @@ async function generateCOTAnalysis(imageUrl) {
 					Authorization: `Bearer ${apiKey}`,
 				},
 				body: JSON.stringify({
-					model: "gpt-4o",
+					model: "gpt-4-vision-preview", // Updated model name
 					messages: messages,
 					max_tokens: 1000,
 				}),
@@ -72,7 +74,7 @@ async function generateCOTAnalysis(imageUrl) {
 			if (!response.ok) {
 				const errorBody = await response.text()
 				console.error(`OpenAI API Error (${response.status}):`, errorBody)
-				throw new Error(`OpenAI API request failed: ${response.status}`)
+				throw new Error(`OpenAI API request failed: ${response.status} - ${errorBody}`)
 			}
 
 			console.log("Parsing response")
