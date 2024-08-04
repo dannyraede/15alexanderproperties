@@ -24,71 +24,71 @@ function mergeDefinitions(prompt) {
 }
 
 async function generateCOTAnalysis(imageUrl) {
-  console.log("Starting COT analysis generation");
-  const apiKey = process.env.OPENAI_API_KEY;
-  const apiUrl = "https://api.openai.com/v1/chat/completions";
+	console.log("Starting COT analysis generation")
+	const apiKey = process.env.OPENAI_API_KEY
+	const apiUrl = "https://api.openai.com/v1/chat/completions"
 
-  // Log a masked version of the API key for debugging
-  console.log("API Key (masked):", apiKey ? `${apiKey.slice(0, 5)}...${apiKey.slice(-5)}` : "Not set");
+	// Log a masked version of the API key for debugging
+	console.log("API Key (masked):", apiKey ? `${apiKey.slice(0, 5)}...${apiKey.slice(-5)}` : "Not set")
 
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not set in environment variables");
-  }
+	if (!apiKey) {
+		throw new Error("OPENAI_API_KEY is not set in environment variables")
+	}
 
-  console.log("Preparing system prompt");
-  const systemPrompt = mergeDefinitions(COT_SYSTEM_PROMPT);
+	console.log("Preparing system prompt")
+	const systemPrompt = mergeDefinitions(COT_SYSTEM_PROMPT)
 
-  const messages = [
-    { role: "system", content: systemPrompt },
-    {
-      role: "user",
-      content: [
-        { type: "text", text: "Analyze this image based on the given instructions." },
-        { type: "image_url", image_url: { url: imageUrl } },
-      ],
-    },
-  ];
+	const messages = [
+		{ role: "system", content: systemPrompt },
+		{
+			role: "user",
+			content: [
+				{ type: "text", text: "Analyze this image based on the given instructions." },
+				{ type: "image_url", image_url: { url: imageUrl } },
+			],
+		},
+	]
 
-  const maxRetries = 3;
-  const retryDelay = 1000;
+	const maxRetries = 3
+	const retryDelay = 1000
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    console.log(`Attempt ${attempt} of ${maxRetries}`);
-    try {
-      console.log("Sending request to OpenAI API");
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4-vision-preview",
-          messages: messages,
-          max_tokens: 1000,
-        }),
-      });
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		console.log(`Attempt ${attempt} of ${maxRetries}`)
+		try {
+			console.log("Sending request to OpenAI API")
+			const response = await fetch(apiUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${apiKey}`,
+				},
+				body: JSON.stringify({
+					model: "gpt-4o",
+					messages: messages,
+					max_tokens: 1000,
+				}),
+			})
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`OpenAI API Error (${response.status}):`, errorBody);
-        throw new Error(`OpenAI API request failed: ${response.status}`);
-      }
+			if (!response.ok) {
+				const errorBody = await response.text()
+				console.error(`OpenAI API Error (${response.status}):`, errorBody)
+				throw new Error(`OpenAI API request failed: ${response.status}`)
+			}
 
-      console.log("Parsing response");
-      const data = await response.json();
-      console.log("Analysis generated successfully");
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error(`Error in attempt ${attempt}:`, error);
-      if (attempt === maxRetries) {
-        console.error("Max retries reached. Throwing error.");
-        throw error;
-      }
-      console.log(`Retrying in ${retryDelay}ms...`);
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-    }
-  }
+			console.log("Parsing response")
+			const data = await response.json()
+			console.log("Analysis generated successfully")
+			return data.choices[0].message.content
+		} catch (error) {
+			console.error(`Error in attempt ${attempt}:`, error)
+			if (attempt === maxRetries) {
+				console.error("Max retries reached. Throwing error.")
+				throw error
+			}
+			console.log(`Retrying in ${retryDelay}ms...`)
+			await new Promise((resolve) => setTimeout(resolve, retryDelay))
+		}
+	}
 }
 
 export default generateCOTAnalysis
