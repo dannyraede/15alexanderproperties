@@ -1,4 +1,4 @@
-export const COT_SYSTEM_PROMPT = `Task: Analyze the given image for Christopher Alexander's 15 fundamental properties of wholeness. For each property, determine if it is prominently and predomiently featured in the given image.
+export const COT_SYSTEM_PROMPT = `Task: Analyze the given image for Christopher Alexander's 15 fundamental properties of wholeness. For each property, determine if it is prominently and predominently featured in the given image.
 
 For each of the 15 properties, provide your reasoning in the following format:
 
