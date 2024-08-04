@@ -65,7 +65,7 @@ async function generateCOTAnalysis(imageUrl) {
 					Authorization: `Bearer ${apiKey}`,
 				},
 				body: JSON.stringify({
-					model: "gpt-4-vision-preview", // Updated model name
+					model: "gpt-4o",
 					messages: messages,
 					max_tokens: 1000,
 				}),
