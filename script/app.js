@@ -104,7 +104,7 @@
 			const formData = new FormData()
 			formData.append("image", blob, "building.jpg")
 
-			displayLoading("Uploading and analyzing image...")
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
 			startScanningAnimation()
 
 			const response = await fetch("/api/mainOrchestrator", {
