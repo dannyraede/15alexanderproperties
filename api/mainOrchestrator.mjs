@@ -1,5 +1,7 @@
 import { uploadImage } from './upload.mjs';
 import { analyzeImage } from './inference/prompthandler.mjs';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const config = {
   api: {
@@ -18,6 +20,11 @@ export default async function handler(req, res) {
 
   try {
     console.log('Starting image processing');
+
+    // Check if OPENAI_API_KEY is set
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not set in environment variables");
+    }
 
     // Step 1: Upload the image
     console.log('Step 1: Uploading image');
