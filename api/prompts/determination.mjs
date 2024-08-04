@@ -1,4 +1,4 @@
-export const DETERMINATION_SYSTEM_PROMPT = `Task: Based on the provided Chain of Thought (COT) reasoning, and the provided image, determine which of Christopher Alexander's 15 fundamental properties of wholeness are prominently and predominantly featured in the given image.
+export const DETERMINATION_SYSTEM_PROMPT = `Task: Based on the provided Chain of Thought (COT) reasoning, and the provided image, determine which of Christopher Alexander's 15 fundamental properties of wholeness are prominently and predominantly featured in architectural elements contained in the given image. Ignore any other elements in the image like people, animals, nature, etc and do not use them in your thinking, only look at buildings, rooms and other architectural elements.
 
 Analyze the COT reasoning carefully, as well as the image:
 
