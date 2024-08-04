@@ -42,12 +42,7 @@ export default async function handler(req, res) {
 
 		// Step 4: Process and format the results
 		console.log("Step 4: Formatting results")
-		const formattedResults = {
-			imageUrl: fullImageUrl,
-			cotAnalysis: analysisResults.cotAnalysis,
-			determination: analysisResults.determination,
-			deepAnalysis: analysisResults.deepAnalysis,
-		}
+		const formattedResults = analysisResults.deepAnalysis
 		console.log("Formatted results:", JSON.stringify(formattedResults, null, 2))
 
 		// Step 5: Return the formatted results

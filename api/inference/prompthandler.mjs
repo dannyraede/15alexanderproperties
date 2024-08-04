@@ -20,16 +20,8 @@ async function analyzeImage(imageUrl) {
 		const deepAnalysis = await generateDeepAnalysis(imageUrl, determination)
 		console.log("Deep Analysis generated successfully")
 
-		// Combine results
-		console.log("Combining results")
-		const result = {
-			cotAnalysis,
-			determination,
-			deepAnalysis,
-		}
-
 		console.log("Analysis completed successfully")
-		return result
+		return { deepAnalysis }
 	} catch (error) {
 		console.error("Error in analyzeImage:")
 		console.error("Error message:", error.message)
