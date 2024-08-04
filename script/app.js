@@ -201,27 +201,32 @@
 	}
 	// Function to display results
 	function displayResults(results) {
-		let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
-		resultsHTML += `
-      <div class="mb-2">
-        <span class="font-semibold">Image URL:</span> 
-        <a href="${results.imageUrl}" target="_blank" class="text-blue-500 hover:underline">${results.imageUrl}</a>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Chain of Thought Analysis:</span>
-        <p class="text-sm">${results.cotAnalysis}</p>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Determination:</span>
-        <p class="text-sm">${results.determination}</p>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Deep Analysis:</span>
-        <p class="text-sm">${results.deepAnalysis}</p>
-      </div>
-    `
+		let resultsHTML = '<h2 class="text-xl font-bold mb-4">Analysis Results:</h2>'
+
+		for (const [property, data] of Object.entries(results)) {
+			if (data.present) {
+				resultsHTML += `
+					<div class="mb-4 p-4 bg-gray-100 rounded-lg">
+						<h3 class="text-lg font-semibold mb-2">${formatPropertyName(property)}</h3>
+						<p class="text-sm">${data.description}</p>
+					</div>
+				`
+			}
+		}
+
+		if (resultsHTML === '<h2 class="text-xl font-bold mb-4">Analysis Results:</h2>') {
+			resultsHTML += '<p class="text-sm">No significant patterns were detected in this image.</p>'
+		}
 
 		resultContainer.innerHTML = resultsHTML
+	}
+
+	// Helper function to format property names
+	function formatPropertyName(property) {
+		return property
+			.split(/(?=[A-Z])/)
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ")
 	}
 
 	// Function to display error messages
