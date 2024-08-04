@@ -1,132 +1,180 @@
-(function() {
-  // DOM elements
-  const video = document.getElementById("video")
-  const canvas = document.getElementById("canvas")
-  const captureBtn = document.getElementById("captureBtn")
-  const fileInput = document.getElementById("fileInput")
-  const resultContainer = document.getElementById("resultContainer")
-  const switchCameraBtn = document.getElementById("switchCameraBtn")
-  const cameraLoading = document.getElementById("cameraLoading")
-  const cameraPermission = document.getElementById("cameraPermission")
-  const newImageBtn = document.createElement("button") // New button
+;(function () {
+	// DOM elements
+	const video = document.getElementById("video")
+	const canvas = document.getElementById("canvas")
+	const captureBtn = document.getElementById("captureBtn")
+	const fileInput = document.getElementById("fileInput")
+	const resultContainer = document.getElementById("resultContainer")
+	const switchCameraBtn = document.getElementById("switchCameraBtn")
+	const cameraLoading = document.getElementById("cameraLoading")
+	const cameraPermission = document.getElementById("cameraPermission")
+	const newImageBtn = document.createElement("button")
 
-  let currentFacingMode = "environment"
-  let capturedImage = null // Store the captured image
+	let currentFacingMode = "environment"
+	let capturedImage = null // Store the captured image
 
-  // Function to initialize the camera
-  async function initCamera(facingMode = "environment") {
-    try {
-      cameraLoading.classList.remove("hidden")
-      cameraPermission.classList.add("hidden")
-      video.classList.add("hidden")
+	// Function to initialize the camera
+	async function initCamera(facingMode = "environment") {
+		try {
+			cameraLoading.classList.remove("hidden")
+			cameraPermission.classList.add("hidden")
+			video.classList.add("hidden")
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode },
-      })
-      video.srcObject = stream
-      currentFacingMode = facingMode
+			const stream = await navigator.mediaDevices.getUserMedia({
+				video: { facingMode: facingMode },
+			})
+			video.srcObject = stream
+			currentFacingMode = facingMode
 
-      video.onloadedmetadata = () => {
-        cameraLoading.classList.add("hidden")
-        video.classList.remove("hidden")
-      }
-    } catch (err) {
-      console.error("Error accessing camera:", err)
-      cameraLoading.classList.add("hidden")
-      cameraPermission.classList.remove("hidden")
-      displayError("Error accessing camera. Please check your permissions.")
-    }
-  }
+			video.onloadedmetadata = () => {
+				cameraLoading.classList.add("hidden")
+				video.classList.remove("hidden")
+			}
+		} catch (err) {
+			console.error("Error accessing camera:", err)
+			cameraLoading.classList.add("hidden")
+			cameraPermission.classList.remove("hidden")
+			displayError("Error accessing camera. Please check your permissions.")
+		}
+	}
 
-  // Function to switch camera
-  async function switchCamera() {
-    const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
-    const currentStream = video.srcObject
+	// Function to switch camera
+	async function switchCamera() {
+		const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
+		const currentStream = video.srcObject
 
-    // Stop all tracks on the current stream
-    if (currentStream) {
-      currentStream.getTracks().forEach((track) => track.stop())
-    }
+		// Stop all tracks on the current stream
+		if (currentStream) {
+			currentStream.getTracks().forEach((track) => track.stop())
+		}
 
-    await initCamera(newFacingMode)
-  }
+		await initCamera(newFacingMode)
+	}
 
-  // Function to capture photo
-  function capturePhoto() {
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    canvas.getContext("2d").drawImage(video, 0, 0)
+	// Function to capture photo
+	function capturePhoto() {
+		canvas.width = video.videoWidth
+		canvas.height = video.videoHeight
+		canvas.getContext("2d").drawImage(video, 0, 0)
 
-    capturedImage = canvas.toDataURL("image/jpeg")
-    showCapturedImage()
-    canvas.toBlob(uploadPhoto, "image/jpeg")
-  }
+		capturedImage = canvas.toDataURL("image/jpeg")
+		showCapturedImage()
+		canvas.toBlob(uploadPhoto, "image/jpeg")
+	}
 
-  // Function to show captured image
-  function showCapturedImage() {
-    video.style.display = "none"
-    canvas.style.display = "block"
-    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
-    switchToNewImageButton()
-  }
+	// Function to show captured image
+	function showCapturedImage() {
+		video.style.display = "none"
+		canvas.style.display = "block"
+		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
+		switchToNewImageButton()
+	}
 
-  // Function to switch to "New Image" button
-  function switchToNewImageButton() {
-    captureBtn.style.display = "none"
-    fileInput.parentElement.style.display = "none"
-    newImageBtn.textContent = "New Image"
-    newImageBtn.className = captureBtn.className // Copy classes from captureBtn
-    newImageBtn.addEventListener("click", resetCapture)
-    resultContainer.appendChild(newImageBtn)
-  }
+	// Function to switch to "New Image" button
+	function switchToNewImageButton() {
+		captureBtn.style.display = "none"
+		fileInput.parentElement.style.display = "none"
+		newImageBtn.textContent = "New Image"
+		newImageBtn.className = captureBtn.className // Copy classes from captureBtn
+		newImageBtn.addEventListener("click", resetCapture)
+		resultContainer.appendChild(newImageBtn)
+	}
 
-  // Function to reset capture
-  function resetCapture() {
-    video.style.display = "block"
-    canvas.style.display = "none"
-    captureBtn.style.display = "block"
-    fileInput.parentElement.style.display = "block"
-    newImageBtn.remove()
-    resultContainer.innerHTML = ""
-  }
+	// Function to reset capture
+	function resetCapture() {
+		video.style.display = "block"
+		canvas.style.display = "none"
+		captureBtn.style.display = "block"
+		fileInput.parentElement.style.display = "block"
+		newImageBtn.remove()
+		resultContainer.innerHTML = ""
+	}
 
-  // Function to handle file upload
-  function handleFileUpload(event) {
-    const file = event.target.files[0]
-    if (file) {
-      uploadPhoto(file)
-    }
-  }
+	// Function to handle file upload
+	function handleFileUpload(event) {
+		const file = event.target.files[0]
+		if (file) {
+			uploadPhoto(file)
+		}
+	}
 
-  // Function to upload photo and analyze
-  async function uploadPhoto(blob) {
-    try {
-      const formData = new FormData()
-      formData.append("image", blob, "building.jpg")
+	// Function to upload photo and analyze
+	async function uploadPhoto(blob) {
+		try {
+			const formData = new FormData()
+			formData.append("image", blob, "building.jpg")
 
-      displayLoading("Uploading and analyzing image...")
+			displayLoading("Uploading and analyzing image...")
+			startScanningAnimation()
 
-      const response = await fetch("/api/mainOrchestrator", {
-        method: "POST",
-        body: formData,
-      })
+			const response = await fetch("/api/mainOrchestrator", {
+				method: "POST",
+				body: formData,
+			})
 
-      if (!response.ok) {
-        throw new Error("Upload and analysis failed")
-      }
+			if (!response.ok) {
+				throw new Error("Upload and analysis failed")
+			}
 
-      const results = await response.json()
-      displayResults(results)
-    } catch (error) {
-      console.error("Error processing image:", error)
-      displayError("Error processing image. Please try again.")
-    }
-  }
+			const results = await response.json()
+			stopScanningAnimation()
+			displayResults(results)
+		} catch (error) {
+			console.error("Error processing image:", error)
+			stopScanningAnimation()
+			displayError("Error processing image. Please try again.")
+		}
+	}
 
-  // Function to display results
-  function displayResults(results) {
-    let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
-    resultsHTML += `
+	// Add these new functions
+
+	function startScanningAnimation() {
+		const scanLine = document.createElement("div")
+		scanLine.id = "scanLine"
+		scanLine.style.position = "absolute"
+		scanLine.style.left = "0"
+		scanLine.style.right = "0"
+		scanLine.style.height = "2px"
+		scanLine.style.backgroundColor = "rgba(0, 255, 0, 0.7)"
+		scanLine.style.boxShadow = "0 0 10px rgba(0, 255, 0, 0.7)"
+		scanLine.style.transition = "top 1s linear"
+		scanLine.style.top = "0"
+
+		const cameraContainer = document.getElementById("cameraContainer")
+		cameraContainer.style.position = "relative"
+		cameraContainer.appendChild(scanLine)
+
+		let goingDown = true
+		const animate = () => {
+			const containerHeight = cameraContainer.offsetHeight
+			const scanLineHeight = scanLine.offsetHeight
+			const top = goingDown ? containerHeight - scanLineHeight : 0
+
+			scanLine.style.top = `${top}px`
+
+			if (goingDown && top <= 0) {
+				goingDown = false
+			} else if (!goingDown && top >= containerHeight - scanLineHeight) {
+				goingDown = true
+			}
+
+			requestAnimationFrame(animate)
+		}
+
+		animate()
+	}
+
+	function stopScanningAnimation() {
+		const scanLine = document.getElementById("scanLine")
+		if (scanLine) {
+			scanLine.remove()
+		}
+	}
+
+	// Function to display results
+	function displayResults(results) {
+		let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
+		resultsHTML += `
       <div class="mb-2">
         <span class="font-semibold">Image URL:</span> 
         <a href="${results.imageUrl}" target="_blank" class="text-blue-500 hover:underline">${results.imageUrl}</a>
@@ -145,12 +193,12 @@
       </div>
     `
 
-    resultContainer.innerHTML = resultsHTML
-  }
+		resultContainer.innerHTML = resultsHTML
+	}
 
-  // Function to display error messages
-  function displayError(message) {
-    resultContainer.innerHTML = `
+	// Function to display error messages
+	function displayError(message) {
+		resultContainer.innerHTML = `
       <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
           <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,11 +208,11 @@
         </div>
       </div>
     `
-  }
+	}
 
-  // Function to display loading messages
-  function displayLoading(message) {
-    resultContainer.innerHTML = `
+	// Function to display loading messages
+	function displayLoading(message) {
+		resultContainer.innerHTML = `
       <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
           <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
@@ -175,25 +223,25 @@
         </div>
       </div>
     `
-  }
+	}
 
-  // Event listeners
-  captureBtn.addEventListener("click", capturePhoto)
-  fileInput.addEventListener("change", handleFileUpload)
-  switchCameraBtn.addEventListener("click", switchCamera)
+	// Event listeners
+	captureBtn.addEventListener("click", capturePhoto)
+	fileInput.addEventListener("change", handleFileUpload)
+	switchCameraBtn.addEventListener("click", switchCamera)
 
-  // Initialize camera when the page loads
-  initCamera()
+	// Initialize camera when the page loads
+	initCamera()
 
-  // Function to check if the device is mobile
-  function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  }
+	// Function to check if the device is mobile
+	function isMobile() {
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+	}
 
-  // Show/hide switch camera button based on device type
-  if (isMobile()) {
-    switchCameraBtn.style.display = "block"
-  } else {
-    switchCameraBtn.style.display = "none"
-  }
-})();
+	// Show/hide switch camera button based on device type
+	if (isMobile()) {
+		switchCameraBtn.style.display = "block"
+	} else {
+		switchCameraBtn.style.display = "none"
+	}
+})()
