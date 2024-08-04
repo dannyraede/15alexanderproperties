@@ -23,11 +23,19 @@ export async function uploadImage(req) {
   const file = files.image;
   console.log('Image file:', file);
 
+  // Add this line to log the file path
+  console.log('File path:', file.filepath);
+
   console.log('Resizing image');
-  const resizedImageBuffer = await sharp(file.filepath)
-    .resize(768, 768, { fit: 'inside', withoutEnlargement: true })
-    .toBuffer()
-  console.log('Image resized');
+  try {
+    const resizedImageBuffer = await sharp(file.filepath)
+      .resize(768, 768, { fit: 'inside', withoutEnlargement: true })
+      .toBuffer();
+    console.log('Image resized successfully');
+  } catch (error) {
+    console.error('Error resizing image:', error);
+    throw new Error(`Failed to resize image: ${error.message}`);
+  }
 
   const timestamp = Date.now();
   const newFilename = `15alexanderproperties-blob/${uuidv4()}-${timestamp}.jpg`;
