@@ -20,7 +20,15 @@ export async function uploadImage(req) {
   })
   console.log('Form data parsed:', { fields, files });
 
-  const file = files.image;
+  const fileArray = files.image;
+  console.log('Image file array:', fileArray);
+
+  if (!Array.isArray(fileArray) || fileArray.length === 0) {
+    console.error('Error: No file uploaded');
+    throw new Error('No file uploaded');
+  }
+
+  const file = fileArray[0];
   console.log('Image file:', file);
 
   // Log the entire file object for debugging
@@ -32,7 +40,6 @@ export async function uploadImage(req) {
     throw new Error('Invalid file object: filepath is undefined');
   }
 
-  // Add this line to log the file path
   console.log('File path:', file.filepath);
 
   console.log('Resizing image');
