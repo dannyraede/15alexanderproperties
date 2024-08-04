@@ -17,57 +17,38 @@ import { SIMPLICITYANDINNERCALM_DEFINITION } from "../prompts/definitions/14_sim
 import { NOTSEPARATENESS_DEFINITION } from "../prompts/definitions/15_notSeparateness_definition.mjs"
 
 function mergeDefinitions(prompt) {
-	return prompt
-		.replace("{{1-definition}}", LEVELSOFSCALE_DEFINITION)
-		.replace("{{2-definition}}", STRONGCENTERS_DEFINITION)
-		.replace("{{3-definition}}", BOUNDARIES_DEFINITION)
-		.replace("{{4-definition}}", ALTERNATINGREPETITION_DEFINITION)
-		.replace("{{5-definition}}", POSITIVESPACE_DEFINITION)
-		.replace("{{6-definition}}", GOODSHAPE_DEFINITION)
-		.replace("{{7-definition}}", LOCALSYMMETRIES_DEFINITION)
-		.replace("{{8-definition}}", DEEPINTERLOCKANDAMBIGUITY_DEFINITION)
-		.replace("{{9-definition}}", CONTRAST_DEFINITION)
-		.replace("{{10-definition}}", GRADIENTS_DEFINITION)
-		.replace("{{11-definition}}", ROUGHNESS_DEFINITION)
-		.replace("{{12-definition}}", ECHOES_DEFINITION)
-		.replace("{{13-definition}}", THEVOID_DEFINITION)
-		.replace("{{14-definition}}", SIMPLICITYANDINNERCALM_DEFINITION)
-		.replace("{{15-definition}}", NOTSEPARATENESS_DEFINITION)
+	console.log("Merging definitions")
+	const mergedPrompt = prompt.replace("{{1-definition}}", LEVELSOFSCALE_DEFINITION).replace("{{2-definition}}", STRONGCENTERS_DEFINITION).replace("{{3-definition}}", BOUNDARIES_DEFINITION).replace("{{4-definition}}", ALTERNATINGREPETITION_DEFINITION).replace("{{5-definition}}", POSITIVESPACE_DEFINITION).replace("{{6-definition}}", GOODSHAPE_DEFINITION).replace("{{7-definition}}", LOCALSYMMETRIES_DEFINITION).replace("{{8-definition}}", DEEPINTERLOCKANDAMBIGUITY_DEFINITION).replace("{{9-definition}}", CONTRAST_DEFINITION).replace("{{10-definition}}", GRADIENTS_DEFINITION).replace("{{11-definition}}", ROUGHNESS_DEFINITION).replace("{{12-definition}}", ECHOES_DEFINITION).replace("{{13-definition}}", THEVOID_DEFINITION).replace("{{14-definition}}", SIMPLICITYANDINNERCALM_DEFINITION).replace("{{15-definition}}", NOTSEPARATENESS_DEFINITION)
+	console.log("Definitions merged")
+	return mergedPrompt
 }
 
 async function generateCOTAnalysis(imageUrl) {
+	console.log("Starting COT analysis generation")
 	const apiKey = process.env.OPENAI_API_KEY
 	const apiUrl = "https://api.openai.com/v1/chat/completions"
 
+	console.log("Preparing system prompt")
 	const systemPrompt = mergeDefinitions(COT_SYSTEM_PROMPT)
 
 	const messages = [
-		{
-			role: "system",
-			content: systemPrompt,
-		},
+		{ role: "system", content: systemPrompt },
 		{
 			role: "user",
 			content: [
-				{
-					type: "text",
-					text: "Analyze this image based on the given instructions.",
-				},
-				{
-					type: "image_url",
-					image_url: {
-						url: imageUrl,
-					},
-				},
+				{ type: "text", text: "Analyze this image based on the given instructions." },
+				{ type: "image_url", image_url: { url: imageUrl } },
 			],
 		},
 	]
 
 	const maxRetries = 3
-	const retryDelay = 1000 // 1 second
+	const retryDelay = 1000
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		console.log(`Attempt ${attempt} of ${maxRetries}`)
 		try {
+			console.log("Sending request to OpenAI API")
 			const response = await fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -85,14 +66,18 @@ async function generateCOTAnalysis(imageUrl) {
 				throw new Error(`OpenAI API request failed: ${response.statusText}`)
 			}
 
+			console.log("Parsing response")
 			const data = await response.json()
+			console.log("Analysis generated successfully")
 			return data.choices[0].message.content
 		} catch (error) {
+			console.error(`Error in attempt ${attempt}:`, error)
 			if (attempt === maxRetries) {
+				console.error("Max retries reached. Throwing error.")
 				throw error
 			}
-			console.error(`Attempt ${attempt} failed. Retrying in ${retryDelay}ms...`)
-			await new Promise(resolve => setTimeout(resolve, retryDelay))
+			console.log(`Retrying in ${retryDelay}ms...`)
+			await new Promise((resolve) => setTimeout(resolve, retryDelay))
 		}
 	}
 }

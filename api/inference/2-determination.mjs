@@ -2,11 +2,14 @@ import fetch from "node-fetch"
 import { DETERMINATION_SYSTEM_PROMPT } from "../prompts/determination.mjs"
 
 async function generateDetermination(imageUrl, COTAnalysis) {
+	console.log("Starting generateDetermination function")
 	const apiKey = process.env.OPENAI_API_KEY
 	const apiUrl = "https://api.openai.com/v1/chat/completions"
 
+	console.log("Preparing system prompt")
 	const systemPrompt = DETERMINATION_SYSTEM_PROMPT.replace("{{COT}}", COTAnalysis)
 
+	console.log("Preparing messages for API call")
 	const messages = [
 		{
 			role: "system",
@@ -33,7 +36,9 @@ async function generateDetermination(imageUrl, COTAnalysis) {
 	const retryDelay = 1000 // 1 second
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		console.log(`Attempt ${attempt} of ${maxRetries}`)
 		try {
+			console.log("Sending request to OpenAI API")
 			const response = await fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -51,13 +56,18 @@ async function generateDetermination(imageUrl, COTAnalysis) {
 				throw new Error(`OpenAI API request failed: ${response.statusText}`)
 			}
 
+			console.log("Parsing response")
 			const data = await response.json()
+			console.log("Determination generated successfully")
 			return JSON.parse(data.choices[0].message.content)
 		} catch (error) {
+			console.error(`Error in attempt ${attempt}:`, error)
+			console.error("Error stack:", error.stack)
 			if (attempt === maxRetries) {
+				console.error("Max retries reached. Throwing error.")
 				throw error
 			}
-			console.error(`Attempt ${attempt} failed. Retrying in ${retryDelay}ms...`)
+			console.log(`Retrying in ${retryDelay}ms...`)
 			await new Promise(resolve => setTimeout(resolve, retryDelay))
 		}
 	}
