@@ -13,6 +13,8 @@
 	let currentFacingMode = "environment"
 	let capturedImage = null // Store the captured image
 
+	let scanningAnimationId = null;
+
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
 		try {
@@ -164,13 +166,18 @@
 				}
 			}
 
-			requestAnimationFrame(animate)
+			scanningAnimationId = requestAnimationFrame(animate)
 		}
 
 		animate()
 	}
 
 	function stopScanningAnimation() {
+		if (scanningAnimationId) {
+			cancelAnimationFrame(scanningAnimationId)
+			scanningAnimationId = null
+		}
+
 		const scanLine = document.getElementById("scanLine")
 		if (scanLine) {
 			scanLine.remove()
