@@ -4,7 +4,7 @@ Analyze the COT reasoning carefully, as well as the image:
 
 {{COT}}
 
-Based on this analysis, determine which properties are most strongly represented in the image. Choose up to 5 properties that are clearly and convincingly present.
+Based on this analysis, determine which properties are most strongly represented in the image. Choose up to 3 properties that are clearly and convincingly present.
 
 Output your determination as a JSON object with boolean values for each property. Set the value to true for the properties you've determined are present, and false for those that are not.
 
@@ -28,4 +28,4 @@ Your output should be in the following format:
   "notSeparateness": false
 }
 
-Ensure that no more than 5 properties are set to true. Choose only the most prominent and predominant properties based on the COT reasoning provided. Do not provide additonal prose or commentary, just provide the expected JSON output.`
+Ensure that no more than 3 properties are set to true. Choose only the most prominent and predominant properties based on the COT reasoning provided. Do not provide additonal prose or commentary, just provide the expected JSON output.`

@@ -151,9 +151,10 @@ async function generateDeepAnalysis(imageUrl, determinationResult) {
 	console.log("Starting deep analysis generation")
 	const deepAnalysisResults = {}
 
+	let trueCount = 0
 	for (const [property, isPresent] of Object.entries(determinationResult)) {
 		console.log(`Processing property: ${property}, isPresent: ${isPresent}`)
-		if (isPresent) {
+		if (isPresent && trueCount < 3) {
 			console.log(`Analyzing property: ${property}`)
 			try {
 				const analysis = await analyzeProperty(property, imageUrl)
@@ -162,6 +163,7 @@ async function generateDeepAnalysis(imageUrl, determinationResult) {
 					description: analysis,
 				}
 				console.log(`Analysis completed for property: ${property}`)
+				trueCount++
 			} catch (error) {
 				console.error(`Error analyzing property ${property}:`, error)
 				deepAnalysisResults[property] = {
@@ -171,6 +173,7 @@ async function generateDeepAnalysis(imageUrl, determinationResult) {
 				}
 			}
 		}
+		if (trueCount >= 3) break
 	}
 
 	console.log("Deep analysis generation completed")
