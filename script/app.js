@@ -13,7 +13,7 @@
 	let currentFacingMode = "environment"
 	let capturedImage = null // Store the captured image
 
-	let scanningAnimationId = null;
+	let scanningAnimationId = null
 
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
@@ -156,16 +156,13 @@
 				scanLine.style.top = `${currentTop + 2}px`
 				if (currentTop + scanLineHeight >= containerHeight) {
 					goingDown = false
-					scanLine.style.top = `${containerHeight - scanLineHeight}px`
 				}
 			} else {
 				scanLine.style.top = `${currentTop - 2}px`
 				if (currentTop <= 0) {
 					goingDown = true
-					scanLine.style.top = "0px"
 				}
 			}
-
 			scanningAnimationId = requestAnimationFrame(animate)
 		}
 
@@ -177,10 +174,14 @@
 			cancelAnimationFrame(scanningAnimationId)
 			scanningAnimationId = null
 		}
-
 		const scanLine = document.getElementById("scanLine")
 		if (scanLine) {
 			scanLine.remove()
+		}
+		// Ensure the cameraContainer's position is reset
+		const cameraContainer = document.getElementById("cameraContainer")
+		if (cameraContainer) {
+			cameraContainer.style.position = ""
 		}
 	}
 	// Function to display results
