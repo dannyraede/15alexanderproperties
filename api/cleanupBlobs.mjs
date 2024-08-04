@@ -8,7 +8,7 @@ async function deleteOldBlobs(cursor = null) {
   let hasMore = true;
 
   while (hasMore) {
-    const { blobs, cursor: nextCursor } = await list({ limit: 100, cursor });
+    const { blobs, cursor: nextCursor } = await list({ prefix: '15alexanderproperties-blob', limit: 100, cursor });
     const oldBlobs = blobs.filter(blob => new Date(blob.uploadedAt) < sevenDaysAgo);
 
     for (const blob of oldBlobs) {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
   try {
     const deletedCount = await deleteOldBlobs();
-    return res.status(200).send(`Deleted ${deletedCount} old blobs`);
+    return res.status(200).send(`Deleted ${deletedCount} old blobs from 15alexanderproperties-blob`);
   } catch (error) {
     console.error('Cleanup error:', error);
     return res.status(500).send('Cleanup failed');

@@ -18,7 +18,7 @@ export async function uploadImage(req) {
     .toBuffer()
 
   const timestamp = Date.now();
-  const newFilename = `${uuidv4()}-${timestamp}.jpg`;
+  const newFilename = `15alexanderproperties-blob/${uuidv4()}-${timestamp}.jpg`;
 
   // Upload to Vercel Blob Storage
   const { url } = await put(newFilename, resizedImageBuffer, {
