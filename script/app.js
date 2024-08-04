@@ -134,7 +134,7 @@
 		scanLine.style.position = "absolute"
 		scanLine.style.left = "0"
 		scanLine.style.right = "0"
-		scanLine.style.height = "2px"
+		scanLine.style.height = "4px"
 		scanLine.style.backgroundColor = "rgba(0, 255, 0, 0.7)"
 		scanLine.style.boxShadow = "0 0 10px rgba(0, 255, 0, 0.7)"
 		scanLine.style.transition = "top 1s linear"
@@ -148,14 +148,18 @@
 		const animate = () => {
 			const containerHeight = cameraContainer.offsetHeight
 			const scanLineHeight = scanLine.offsetHeight
-			const top = goingDown ? containerHeight - scanLineHeight : 0
+			const currentTop = parseInt(scanLine.style.top, 10)
 
-			scanLine.style.top = `${top}px`
-
-			if (goingDown && top <= 0) {
-				goingDown = false
-			} else if (!goingDown && top >= containerHeight - scanLineHeight) {
-				goingDown = true
+			if (goingDown) {
+				scanLine.style.top = `${currentTop + 2}px`
+				if (currentTop + scanLineHeight >= containerHeight) {
+					goingDown = false
+				}
+			} else {
+				scanLine.style.top = `${currentTop - 2}px`
+				if (currentTop <= 0) {
+					goingDown = true
+				}
 			}
 
 			requestAnimationFrame(animate)
