@@ -8,8 +8,10 @@
   const switchCameraBtn = document.getElementById("switchCameraBtn")
   const cameraLoading = document.getElementById("cameraLoading")
   const cameraPermission = document.getElementById("cameraPermission")
+  const newImageBtn = document.createElement("button") // New button
 
   let currentFacingMode = "environment"
+  let capturedImage = null // Store the captured image
 
   // Function to initialize the camera
   async function initCamera(facingMode = "environment") {
@@ -55,7 +57,37 @@
     canvas.height = video.videoHeight
     canvas.getContext("2d").drawImage(video, 0, 0)
 
+    capturedImage = canvas.toDataURL("image/jpeg")
+    showCapturedImage()
     canvas.toBlob(uploadPhoto, "image/jpeg")
+  }
+
+  // Function to show captured image
+  function showCapturedImage() {
+    video.style.display = "none"
+    canvas.style.display = "block"
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
+    switchToNewImageButton()
+  }
+
+  // Function to switch to "New Image" button
+  function switchToNewImageButton() {
+    captureBtn.style.display = "none"
+    fileInput.parentElement.style.display = "none"
+    newImageBtn.textContent = "New Image"
+    newImageBtn.className = captureBtn.className // Copy classes from captureBtn
+    newImageBtn.addEventListener("click", resetCapture)
+    resultContainer.appendChild(newImageBtn)
+  }
+
+  // Function to reset capture
+  function resetCapture() {
+    video.style.display = "block"
+    canvas.style.display = "none"
+    captureBtn.style.display = "block"
+    fileInput.parentElement.style.display = "block"
+    newImageBtn.remove()
+    resultContainer.innerHTML = ""
   }
 
   // Function to handle file upload
