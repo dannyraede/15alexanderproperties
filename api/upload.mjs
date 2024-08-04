@@ -23,6 +23,15 @@ export async function uploadImage(req) {
   const file = files.image;
   console.log('Image file:', file);
 
+  // Log the entire file object for debugging
+  console.log('Full file object:', JSON.stringify(file, null, 2));
+
+  // Check if file.filepath is undefined
+  if (!file || !file.filepath) {
+    console.error('Error: file.filepath is undefined');
+    throw new Error('Invalid file object: filepath is undefined');
+  }
+
   // Add this line to log the file path
   console.log('File path:', file.filepath);
 
