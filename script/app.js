@@ -137,7 +137,7 @@
 		scanLine.style.height = "4px"
 		scanLine.style.backgroundColor = "rgba(0, 255, 0, 0.7)"
 		scanLine.style.boxShadow = "0 0 10px rgba(0, 255, 0, 0.7)"
-		scanLine.style.transition = "top 1s linear"
+		scanLine.style.transition = "top 0.5s linear"
 		scanLine.style.top = "0"
 
 		const cameraContainer = document.getElementById("cameraContainer")
@@ -154,11 +154,13 @@
 				scanLine.style.top = `${currentTop + 2}px`
 				if (currentTop + scanLineHeight >= containerHeight) {
 					goingDown = false
+					scanLine.style.top = `${containerHeight - scanLineHeight}px`
 				}
 			} else {
 				scanLine.style.top = `${currentTop - 2}px`
 				if (currentTop <= 0) {
 					goingDown = true
+					scanLine.style.top = "0px"
 				}
 			}
 
@@ -174,7 +176,6 @@
 			scanLine.remove()
 		}
 	}
-
 	// Function to display results
 	function displayResults(results) {
 		let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
