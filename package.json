@@ -7,7 +7,10 @@
     "tailwindcss": "^3.4.7"
   },
   "dependencies": {
+    "@vercel/blob": "^0.23.4",
     "formidable": "^3.5.1",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "sharp": "^0.33.4",
+    "uuid": "^10.0.0"
   }
 }
