@@ -48,7 +48,7 @@ async function generateDetermination(imageUrl, COTAnalysis) {
 				body: JSON.stringify({
 					model: "gpt-4o",
 					messages: messages,
-					max_tokens: 1000,
+					max_tokens: 1500,
 				}),
 			})
 
@@ -68,7 +68,7 @@ async function generateDetermination(imageUrl, COTAnalysis) {
 				throw error
 			}
 			console.log(`Retrying in ${retryDelay}ms...`)
-			await new Promise(resolve => setTimeout(resolve, retryDelay))
+			await new Promise((resolve) => setTimeout(resolve, retryDelay))
 		}
 	}
 }

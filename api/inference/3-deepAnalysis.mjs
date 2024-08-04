@@ -123,7 +123,7 @@ async function analyzeProperty(property, imageUrl) {
 				body: JSON.stringify({
 					model: "gpt-4o",
 					messages: messages,
-					max_tokens: 1000,
+					max_tokens: 1500,
 				}),
 			})
 
