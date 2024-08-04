@@ -101,33 +101,46 @@
 	}
 
 	// Function to upload photo and analyze
+	let uploadCount = 0
+
 	async function uploadPhoto(blob) {
+		uploadCount++
+		console.log(`uploadPhoto function called (Count: ${uploadCount})`, new Date().toISOString())
 		try {
+			console.log("Creating FormData")
 			const formData = new FormData()
 			formData.append("image", blob, "building.jpg")
 
+			console.log("Displaying loading message and starting animation")
 			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
 			startScanningAnimation()
 
+			console.log("Sending fetch request to /api/mainOrchestrator")
 			const response = await fetch("/api/mainOrchestrator", {
 				method: "POST",
 				body: formData,
 			})
 
-			// Stop the scanning animation immediately after receiving the response
+			console.log("Fetch request completed, stopping animation")
 			stopScanningAnimation()
 
 			if (!response.ok) {
+				console.error("Response not OK:", response.status, response.statusText)
 				throw new Error("Upload and analysis failed")
 			}
 
+			console.log("Parsing response JSON")
 			const results = await response.json()
+			console.log("Results received:", JSON.stringify(results, null, 2))
+
+			console.log("Displaying results")
 			displayResults(results)
 		} catch (error) {
-			console.error("Error processing image:", error)
-			stopScanningAnimation() // Ensure animation stops even if there's an error
+			console.error("Error in uploadPhoto:", error.message)
+			stopScanningAnimation()
 			displayError("Error processing image. Please try again.")
 		}
+		console.log(`uploadPhoto function completed (Count: ${uploadCount})`, new Date().toISOString())
 	}
 
 	// Add these new functions
