@@ -29,9 +29,9 @@ export default async function handler(req, res) {
 		const { imageUrl } = await uploadImage(req)
 		console.log("Image uploaded successfully. URL:", imageUrl)
 
-		// Step 2: Get the full URL
-		console.log("Step 2: Generating full image URL")
-		const fullImageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${imageUrl}`
+		// Step 2: Use the image URL directly
+		console.log("Step 2: Using the uploaded image URL")
+		const fullImageUrl = imageUrl
 		console.log("Full image URL:", fullImageUrl)
 
 		// Step 3: Analyze the image
