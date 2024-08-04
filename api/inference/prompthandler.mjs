@@ -33,7 +33,6 @@ async function analyzeImage(imageUrl) {
 	} catch (error) {
 		console.error("Error in analyzeImage:")
 		console.error("Error message:", error.message)
-		console.error("Error stack:", error.stack)
 		throw error
 	}
 }

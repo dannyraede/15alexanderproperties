@@ -55,9 +55,7 @@ export default async function handler(req, res) {
 		res.status(200).json(formattedResults)
 		console.log("Response sent successfully")
 	} catch (error) {
-		console.error("Orchestration error:", error)
-		console.error("Error stack:", error.stack)
-		console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error)))
+		console.error("Orchestration error:", error.message)
 		res.status(500).json({ error: "Processing failed", details: error.message })
 		console.log("Error response sent")
 	}

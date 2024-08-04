@@ -82,7 +82,7 @@ async function generateCOTAnalysis(imageUrl) {
 			console.log("Analysis generated successfully")
 			return data.choices[0].message.content
 		} catch (error) {
-			console.error(`Error in attempt ${attempt}:`, error)
+			console.error(`Error in attempt ${attempt}:`, error.message)
 			if (attempt === maxRetries) {
 				console.error("Max retries reached. Throwing error.")
 				throw error
