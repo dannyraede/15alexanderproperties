@@ -5,20 +5,33 @@
   const captureBtn = document.getElementById("captureBtn")
   const fileInput = document.getElementById("fileInput")
   const resultContainer = document.getElementById("resultContainer")
-
   const switchCameraBtn = document.getElementById("switchCameraBtn")
+  const cameraLoading = document.getElementById("cameraLoading")
+  const cameraPermission = document.getElementById("cameraPermission")
+
   let currentFacingMode = "environment"
 
   // Function to initialize the camera
   async function initCamera(facingMode = "environment") {
     try {
+      cameraLoading.classList.remove("hidden")
+      cameraPermission.classList.add("hidden")
+      video.classList.add("hidden")
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facingMode },
       })
       video.srcObject = stream
       currentFacingMode = facingMode
+
+      video.onloadedmetadata = () => {
+        cameraLoading.classList.add("hidden")
+        video.classList.remove("hidden")
+      }
     } catch (err) {
       console.error("Error accessing camera:", err)
+      cameraLoading.classList.add("hidden")
+      cameraPermission.classList.remove("hidden")
       displayError("Error accessing camera. Please check your permissions.")
     }
   }
