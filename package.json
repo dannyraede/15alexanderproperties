@@ -10,6 +10,7 @@
     "@vercel/blob": "^0.23.4",
     "formidable": "^3.5.1",
     "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.2",
     "sharp": "^0.33.4",
     "uuid": "^10.0.0"
   }
