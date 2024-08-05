@@ -61,11 +61,6 @@
 
 		capturedImage = canvas.toDataURL("image/jpeg")
 		showCapturedImage()
-		canvas.toBlob((blob) => {
-			if (!isUploading) {
-				uploadPhoto(blob)
-			}
-		}, "image/jpeg")
 	}
 
 	// Function to show captured image
@@ -74,6 +69,12 @@
 		canvas.style.display = "block"
 		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
 		switchToNewImageButton()
+		
+		canvas.toBlob((blob) => {
+			if (!isUploading && !hasUploaded) {
+				uploadPhoto(blob)
+			}
+		}, "image/jpeg")
 	}
 
 	// Function to switch to "New Image" button
@@ -99,7 +100,7 @@
 	// Function to handle file upload
 	function handleFileUpload(event) {
 		const file = event.target.files[0]
-		if (file && !isUploading) {
+		if (file && !isUploading && !hasUploaded) {
 			uploadPhoto(file)
 		}
 	}
