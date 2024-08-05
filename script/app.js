@@ -41,12 +41,13 @@
 	function handleFileSelect(file) {
 		if (file) {
 			if (file.size > 3 * 1024 * 1024) {
-				displayError("File size exceeds 3MB limit. Please choose a smaller file.");
-				return;
+				displayError("File size exceeds 3MB limit. Please choose a smaller file.")
+				return
 			}
 			selectedFile = file
 			displayFilePreview(file)
-			analyzePhoto()
+			// Only call analyzePhoto after displayFilePreview
+			setTimeout(analyzePhoto, 0)
 		}
 	}
 
@@ -134,6 +135,12 @@
 	 * Starts the scanning animation
 	 */
 	function startScanningAnimation() {
+		const imageContainer = document.getElementById("imageContainer")
+		if (!imageContainer) {
+			console.error("Image container not found")
+			return
+		}
+
 		const scanLine = document.createElement("div")
 		scanLine.id = "scanLine"
 		scanLine.style.position = "absolute"
@@ -145,7 +152,6 @@
 		scanLine.style.transition = "top 0.5s linear"
 		scanLine.style.top = "0"
 
-		const imageContainer = document.getElementById("imageContainer")
 		imageContainer.style.position = "relative"
 		imageContainer.appendChild(scanLine)
 
