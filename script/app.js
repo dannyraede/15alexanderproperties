@@ -167,6 +167,17 @@
 		}
 	}
 
+	function disableUploadButtons() {
+		captureBtn.disabled = true
+		captureBtn.classList.add('opacity-50', 'cursor-not-allowed')
+		fileInput.disabled = true
+		fileInput.classList.add('opacity-50', 'cursor-not-allowed')
+		if (switchCameraBtn) {
+			switchCameraBtn.disabled = true
+			switchCameraBtn.classList.add('opacity-50', 'cursor-not-allowed')
+		}
+	}
+
 	function startScanningAnimation() {
 		const scanLine = document.createElement("div")
 		scanLine.id = "scanLine"
