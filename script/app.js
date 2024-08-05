@@ -13,9 +13,15 @@
 	let currentFacingMode = "environment"
 	let capturedImage = null // Store the captured image
 
+	// Function to log with timestamp
+	function logWithTimestamp(message) {
+		console.log(`[${new Date().toISOString()}] ${message}`)
+	}
+
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
 		try {
+			logWithTimestamp("Initializing camera...")
 			cameraLoading.classList.remove("hidden")
 			cameraPermission.classList.add("hidden")
 			video.classList.add("hidden")
@@ -27,10 +33,12 @@
 			currentFacingMode = facingMode
 
 			video.onloadedmetadata = () => {
+				logWithTimestamp("Camera initialized successfully")
 				cameraLoading.classList.add("hidden")
 				video.classList.remove("hidden")
 			}
 		} catch (err) {
+			logWithTimestamp(`Error accessing camera: ${err}`)
 			console.error("Error accessing camera:", err)
 			cameraLoading.classList.add("hidden")
 			cameraPermission.classList.remove("hidden")
@@ -40,6 +48,7 @@
 
 	// Function to switch camera
 	async function switchCamera() {
+		logWithTimestamp("Switching camera...")
 		const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
 		const currentStream = video.srcObject
 
@@ -49,51 +58,64 @@
 		}
 
 		await initCamera(newFacingMode)
+		logWithTimestamp("Camera switched successfully")
 	}
 
 	// Function to capture photo
 	function capturePhoto() {
+		logWithTimestamp("Capturing photo...")
 		canvas.width = video.videoWidth
 		canvas.height = video.videoHeight
 		canvas.getContext("2d").drawImage(video, 0, 0)
 
 		capturedImage = canvas.toDataURL("image/jpeg")
 		showCapturedImage()
-		canvas.toBlob(uploadPhoto, "image/jpeg")
+		canvas.toBlob((blob) => {
+			logWithTimestamp("Photo captured, preparing to upload...")
+			uploadPhoto(blob)
+		}, "image/jpeg")
 	}
 
 	// Function to show captured image
 	function showCapturedImage() {
+		logWithTimestamp("Displaying captured image...")
 		video.style.display = "none"
 		canvas.style.display = "block"
 		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
 		switchToNewImageButton()
+		logWithTimestamp("Captured image displayed")
 	}
 
 	// Function to switch to "New Image" button
 	function switchToNewImageButton() {
+		logWithTimestamp("Switching to 'New Image' button...")
 		captureBtn.style.display = "none"
 		fileInput.parentElement.style.display = "none"
 		newImageBtn.textContent = "New Image"
 		newImageBtn.className = captureBtn.className // Copy classes from captureBtn
 		newImageBtn.addEventListener("click", resetCapture)
 		resultContainer.appendChild(newImageBtn)
+		logWithTimestamp("Switched to 'New Image' button")
 	}
 
 	// Function to reset capture
 	function resetCapture() {
+		logWithTimestamp("Resetting capture...")
 		video.style.display = "block"
 		canvas.style.display = "none"
 		captureBtn.style.display = "block"
 		fileInput.parentElement.style.display = "block"
 		newImageBtn.remove()
 		resultContainer.innerHTML = ""
+		logWithTimestamp("Capture reset complete")
 	}
 
 	// Function to handle file upload
 	function handleFileUpload(event) {
+		logWithTimestamp("Handling file upload...")
 		const file = event.target.files[0]
 		if (file) {
+			logWithTimestamp(`File selected: ${file.name}`)
 			uploadPhoto(file)
 		}
 	}
@@ -101,11 +123,13 @@
 	// Function to upload photo and analyze
 	async function uploadPhoto(blob) {
 		try {
+			logWithTimestamp("Starting photo upload and analysis...")
 			const formData = new FormData()
 			formData.append("image", blob, "building.jpg")
 
 			displayLoading("Uploading and analyzing image...")
 
+			logWithTimestamp("Sending request to /api/mainOrchestrator...")
 			const response = await fetch("/api/mainOrchestrator", {
 				method: "POST",
 				body: formData,
@@ -115,9 +139,12 @@
 				throw new Error("Upload and analysis failed")
 			}
 
+			logWithTimestamp("Response received, processing results...")
 			const results = await response.json()
 			displayResults(results)
+			logWithTimestamp("Results displayed successfully")
 		} catch (error) {
+			logWithTimestamp(`Error processing image: ${error}`)
 			console.error("Error processing image:", error)
 			displayError("Error processing image. Please try again.")
 		}
@@ -125,6 +152,7 @@
 
 	// Function to display results
 	function displayResults(results) {
+		logWithTimestamp("Displaying results...")
 		let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
 		resultsHTML += `
       <div class="mb-2">
@@ -146,10 +174,12 @@
     `
 
 		resultContainer.innerHTML = resultsHTML
+		logWithTimestamp("Results displayed")
 	}
 
 	// Function to display error messages
 	function displayError(message) {
+		logWithTimestamp(`Displaying error: ${message}`)
 		resultContainer.innerHTML = `
       <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
@@ -160,10 +190,12 @@
         </div>
       </div>
     `
+		logWithTimestamp("Error displayed")
 	}
 
 	// Function to display loading messages
 	function displayLoading(message) {
+		logWithTimestamp(`Displaying loading message: ${message}`)
 		resultContainer.innerHTML = `
       <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
@@ -175,6 +207,7 @@
         </div>
       </div>
     `
+		logWithTimestamp("Loading message displayed")
 	}
 
 	// Event listeners
@@ -183,6 +216,7 @@
 	switchCameraBtn.addEventListener("click", switchCamera)
 
 	// Initialize camera when the page loads
+	logWithTimestamp("Initializing camera on page load...")
 	initCamera()
 
 	// Function to check if the device is mobile
@@ -192,8 +226,10 @@
 
 	// Show/hide switch camera button based on device type
 	if (isMobile()) {
+		logWithTimestamp("Mobile device detected, showing switch camera button")
 		switchCameraBtn.style.display = "block"
 	} else {
+		logWithTimestamp("Non-mobile device detected, hiding switch camera button")
 		switchCameraBtn.style.display = "none"
 	}
 })()
