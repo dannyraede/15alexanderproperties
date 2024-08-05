@@ -17,6 +17,7 @@
 	let uploadTimeout = null
 	let isUploading = false
 	let hasUploaded = false
+	let isCapturing = false
 
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
@@ -58,40 +59,52 @@
 
 	// Function to capture photo
 	function capturePhoto() {
-		canvas.width = video.videoWidth
-		canvas.height = video.videoHeight
-		canvas.getContext("2d").drawImage(video, 0, 0)
+		logWithTimestamp("capturePhoto called");
+		if (isCapturing) {
+			logWithTimestamp("Capture already in progress, ignoring this call");
+			return;
+		}
 
-		capturedImage = canvas.toDataURL("image/jpeg")
-		showCapturedImage()
+		isCapturing = true;
+		logWithTimestamp("Setting isCapturing to true");
+
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+		canvas.getContext("2d").drawImage(video, 0, 0);
+
+		capturedImage = canvas.toDataURL("image/jpeg");
+		logWithTimestamp("Image captured, calling showCapturedImage");
+		showCapturedImage();
+
+		isCapturing = false;
+		logWithTimestamp("Setting isCapturing to false");
 	}
 
 	// Function to show captured image
 	function showCapturedImage() {
-		logWithTimestamp("showCapturedImage called")
-		video.style.display = "none"
-		canvas.style.display = "block"
-		switchToNewImageButton()
-
+		logWithTimestamp("showCapturedImage called");
+		video.style.display = "none";
+		canvas.style.display = "block";
+		switchToNewImageButton();
+		
 		canvas.toBlob((blob) => {
-			logWithTimestamp(`canvas.toBlob callback triggered (blob size: ${blob.size} bytes)`)
+			logWithTimestamp(`canvas.toBlob callback triggered (blob size: ${blob.size} bytes)`);
 			if (!isUploading && !hasUploaded) {
-				logWithTimestamp("Conditions met, scheduling uploadPhoto")
-				clearTimeout(uploadTimeout)
+				logWithTimestamp("Conditions met, scheduling uploadPhoto");
+				clearTimeout(uploadTimeout);
 				uploadTimeout = setTimeout(() => {
-					logWithTimestamp("Timeout callback triggered")
+					logWithTimestamp("Timeout callback triggered");
 					if (!isUploading && !hasUploaded) {
-						logWithTimestamp("Executing uploadPhoto")
-						uploadPhoto(blob)
+						logWithTimestamp("Executing uploadPhoto");
+						uploadPhoto(blob);
 					} else {
-						logWithTimestamp(`Upload skipped. isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`)
+						logWithTimestamp(`Upload skipped. isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`);
 					}
-				}, 50)
+				}, 50);
 			} else {
-				logWithTimestamp("Conditions not met, skipping uploadPhoto")
-				logWithTimestamp(`isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`)
+				logWithTimestamp(`Upload skipped. isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`);
 			}
-		}, "image/jpeg")
+		}, "image/jpeg");
 	}
 
 	// Function to switch to "New Image" button
@@ -124,62 +137,62 @@
 
 	// Function to upload photo and analyze
 	async function uploadPhoto(blob) {
-		logWithTimestamp("uploadPhoto called with blob")
+		logWithTimestamp(`uploadPhoto called with blob size: ${blob.size} bytes`);
 		if (hasUploaded) {
-			logWithTimestamp("Upload already completed. Refresh the page to upload again.")
-			return
+			logWithTimestamp("Upload already completed. Refresh the page to upload again.");
+			return;
 		}
 
 		if (isUploading) {
-			logWithTimestamp("Upload already in progress, ignoring this call")
-			return
+			logWithTimestamp("Upload already in progress, ignoring this call");
+			return;
 		}
 
-		isUploading = true
-		logWithTimestamp(`uploadPhoto function called`)
+		isUploading = true;
+		logWithTimestamp("Setting isUploading to true");
 
 		try {
-			logWithTimestamp("Creating FormData")
-			const formData = new FormData()
-			formData.append("image", blob, "building.jpg")
+			logWithTimestamp("Creating FormData");
+			const formData = new FormData();
+			formData.append("image", blob, "building.jpg");
 
-			logWithTimestamp("Displaying loading message and starting animation")
-			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
-			startScanningAnimation()
+			logWithTimestamp("Displaying loading message and starting animation");
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)");
+			startScanningAnimation();
 
-			logWithTimestamp("Sending fetch request to /api/mainOrchestrator")
+			logWithTimestamp("Sending fetch request to /api/mainOrchestrator");
 			const response = await fetch("/api/mainOrchestrator", {
 				method: "POST",
 				body: formData,
-			})
+			});
 
-			logWithTimestamp("Fetch request completed, stopping animation")
-			stopScanningAnimation()
+			logWithTimestamp(`Fetch request completed. Status: ${response.status}`);
+			stopScanningAnimation();
 
 			if (!response.ok) {
-				logWithTimestamp(`Response not OK: ${response.status} ${response.statusText}`)
-				throw new Error("Upload and analysis failed")
+				logWithTimestamp(`Response not OK: ${response.status} ${response.statusText}`);
+				throw new Error("Upload and analysis failed");
 			}
 
-			logWithTimestamp("Parsing response JSON")
-			const results = await response.json()
-			logWithTimestamp(`Results received: ${JSON.stringify(results, null, 2)}`)
+			logWithTimestamp("Parsing response JSON");
+			const results = await response.json();
+			logWithTimestamp(`Results received: ${JSON.stringify(results, null, 2)}`);
 
-			logWithTimestamp("Displaying results")
-			displayResults(results)
+			logWithTimestamp("Displaying results");
+			displayResults(results);
 
-			// Set hasUploaded to true after successful upload
-			hasUploaded = true
+			hasUploaded = true;
+			logWithTimestamp("Setting hasUploaded to true");
 
-			// Disable upload buttons
-			disableUploadButtons()
+			logWithTimestamp("Disabling upload buttons");
+			disableUploadButtons();
 		} catch (error) {
-			logWithTimestamp(`Error in uploadPhoto: ${error.message}`)
-			stopScanningAnimation()
-			displayError("Error processing image. Please try again.")
+			logWithTimestamp(`Error in uploadPhoto: ${error.message}`);
+			stopScanningAnimation();
+			displayError("Error processing image. Please try again.");
 		} finally {
-			isUploading = false
-			logWithTimestamp(`uploadPhoto function completed`)
+			isUploading = false;
+			logWithTimestamp("Setting isUploading to false");
 		}
 	}
 
@@ -332,7 +345,14 @@
 	}
 
 	// Event listeners
-	captureBtn.addEventListener("click", capturePhoto)
+	captureBtn.addEventListener("click", () => {
+		logWithTimestamp("Capture button clicked");
+		if (!isCapturing) {
+			capturePhoto();
+		} else {
+			logWithTimestamp("Capture already in progress, ignoring this click");
+		}
+	});
 	fileInput.addEventListener("change", handleFileUpload)
 	switchCameraBtn.addEventListener("click", switchCamera)
 
