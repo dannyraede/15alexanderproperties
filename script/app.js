@@ -43,8 +43,8 @@
 	 */
 	function handleFileSelect(file) {
 		if (file) {
-			if (file.size > 3 * 1024 * 1024) {
-				displayError("File size exceeds 3MB limit. Please choose a smaller file.")
+			if (file.size > 5 * 1024 * 1024) {
+				displayError("File size exceeds 5MB limit. Please choose a smaller file.")
 				return
 			}
 			selectedFile = file
