@@ -2042,6 +2042,10 @@ select {
   height: 3rem;
 }
 
+.h-auto {
+  height: auto;
+}
+
 .max-h-32 {
   max-height: 8rem;
 }

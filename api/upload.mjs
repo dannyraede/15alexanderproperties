@@ -41,15 +41,42 @@ export async function uploadImage(req) {
 	console.log("Resizing image")
 	let resizedImageBuffer
 	try {
-		resizedImageBuffer = await sharp(file.filepath).resize(768, 768, { fit: "inside", withoutEnlargement: true }).toBuffer()
+		const image = sharp(file.filepath);
+		const metadata = await image.metadata();
+		
+		let width = metadata.width;
+		let height = metadata.height;
+		const aspectRatio = width / height;
+
+		if (width > 2000 || height > 2000) {
+			if (aspectRatio > 1) {
+				width = 2000;
+				height = Math.round(2000 / aspectRatio);
+			} else {
+				height = 2000;
+				width = Math.round(2000 * aspectRatio);
+			}
+		}
+
+		if (width > 768 && height > 768) {
+			if (width < height) {
+				width = 768;
+				height = Math.round(768 / aspectRatio);
+			} else {
+				height = 768;
+				width = Math.round(768 * aspectRatio);
+			}
+		}
+
+		resizedImageBuffer = await image.resize(width, height, { fit: "inside", withoutEnlargement: true }).toBuffer()
 		console.log("Image resized successfully")
 
 		// Verify the resized image
-		const metadata = await sharp(resizedImageBuffer).metadata()
-		console.log("Resized image metadata:", metadata)
+		const resizedMetadata = await sharp(resizedImageBuffer).metadata()
+		console.log("Resized image metadata:", resizedMetadata)
 
-		if (!["jpeg", "png", "webp"].includes(metadata.format)) {
-			throw new Error(`Unsupported image format after resize: ${metadata.format}`)
+		if (!["jpeg", "png", "webp"].includes(resizedMetadata.format)) {
+			throw new Error(`Unsupported image format after resize: ${resizedMetadata.format}`)
 		}
 	} catch (error) {
 		console.error("Error resizing or validating image:", error)

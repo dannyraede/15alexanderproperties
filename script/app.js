@@ -13,13 +13,17 @@
 	function displayFilePreview(file) {
 		const reader = new FileReader()
 		reader.onload = function (e) {
-			uploadBox.innerHTML = `
-				<div class="flex flex-col items-center">
-					<img src="${e.target.result}" alt="Preview" class="max-w-full max-h-32 object-contain mb-2">
-					<p class="text-xs text-gray-400">${file.name}</p>
-				</div>
-				<p class="text-sm text-gray-500 mt-2">Click "Analyze" to process the image</p>
+			uploadBox.style.display = "none"
+
+			const imageContainer = document.createElement("div")
+			imageContainer.id = "imageContainer"
+			imageContainer.className = "w-full max-w-md mx-auto mb-4 relative"
+			imageContainer.innerHTML = `
+				<img src="${e.target.result}" alt="Preview" class="w-full h-auto object-contain">
 			`
+			uploadBox.parentNode.insertBefore(imageContainer, uploadBox)
+
+			analyzeBtn.disabled = false
 		}
 		reader.readAsDataURL(file)
 	}
@@ -58,13 +62,16 @@
 		isUploading = true
 		console.log(`analyzePhoto function called`, new Date().toISOString())
 
+		// Hide the analyze button
+		analyzeBtn.style.display = "none"
+
 		try {
 			console.log("Creating FormData")
 			const formData = new FormData()
 			formData.append("image", selectedFile, selectedFile.name)
 
 			console.log("Displaying loading message and starting animation")
-			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!")
 			startScanningAnimation()
 
 			console.log("Sending fetch request to /api/mainOrchestrator")
@@ -120,13 +127,13 @@
 		scanLine.style.transition = "top 0.5s linear"
 		scanLine.style.top = "0"
 
-		const cameraContainer = document.getElementById("cameraContainer")
-		cameraContainer.style.position = "relative"
-		cameraContainer.appendChild(scanLine)
+		const imageContainer = document.getElementById("imageContainer")
+		imageContainer.style.position = "relative"
+		imageContainer.appendChild(scanLine)
 
 		let goingDown = true
 		const animate = () => {
-			const containerHeight = cameraContainer.offsetHeight
+			const containerHeight = imageContainer.offsetHeight
 			const scanLineHeight = scanLine.offsetHeight
 			const currentTop = parseInt(scanLine.style.top, 10)
 
@@ -156,10 +163,10 @@
 		if (scanLine) {
 			scanLine.remove()
 		}
-		// Ensure the cameraContainer's position is reset
-		const cameraContainer = document.getElementById("cameraContainer")
-		if (cameraContainer) {
-			cameraContainer.style.position = ""
+		// Ensure the imageContainer's position is reset
+		const imageContainer = document.getElementById("imageContainer")
+		if (imageContainer) {
+			imageContainer.style.position = ""
 		}
 	}
 	// Function to display results
