@@ -14,6 +14,7 @@
 	let capturedImage = null // Store the captured image
 
 	let scanningAnimationId = null
+	let uploadTimeout = null
 
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
@@ -73,8 +74,16 @@
 		canvas.toBlob((blob) => {
 			console.log("canvas.toBlob callback triggered")
 			if (!isUploading && !hasUploaded) {
-				console.log("Conditions met, calling uploadPhoto")
-				uploadPhoto(blob)
+				console.log("Conditions met, scheduling uploadPhoto")
+				clearTimeout(uploadTimeout)
+				uploadTimeout = setTimeout(() => {
+					if (!isUploading && !hasUploaded) {
+						console.log("Executing uploadPhoto")
+						uploadPhoto(blob)
+					} else {
+						console.log("Upload already in progress or completed, skipping")
+					}
+				}, 50) // 50ms delay
 			} else {
 				console.log("Conditions not met, skipping uploadPhoto")
 				console.log("isUploading:", isUploading, "hasUploaded:", hasUploaded)
