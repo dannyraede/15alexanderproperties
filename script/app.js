@@ -212,6 +212,14 @@
 	// Function to display results
 	function displayResults(results) {
 		let resultsHTML = '<div class="bg-white shadow-lg rounded-lg overflow-hidden">'
+
+		// Add a "New Analysis" button above the results
+		resultsHTML += `
+			<button id="newAnalysisBtn" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 transition duration-300 ease-in-out transform hover:scale-105">
+				New Analysis
+			</button>
+		`
+
 		resultsHTML += '<div class="bg-blue-600 text-white px-4 py-2"><h2 class="text-xl font-bold">Analysis Results</h2></div>'
 		resultsHTML += '<div class="p-4">'
 
@@ -222,7 +230,7 @@
 				resultsHTML += `
 					<div class="mb-4 last:mb-0">
 						<h3 class="text-lg font-semibold text-gray-800 mb-2">${formatPropertyName(property)}</h3>
-						<p class="text-gray-600 text-sm leading-relaxed">${data.description}</p>
+						<p class="text-gray-600 text-sm leading-relaxed">${data.description.replace(/\n/g, "<br>")}</p>
 					</div>
 				`
 			}
@@ -234,13 +242,6 @@
 
 		resultsHTML += "</div>" // Close the p-4 div
 		resultsHTML += "</div>" // Close the main container div
-
-		// Add a "New Analysis" button
-		resultsHTML += `
-			<button id="newAnalysisBtn" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-				New Analysis
-			</button>
-		`
 
 		resultContainer.innerHTML = resultsHTML
 
