@@ -30,6 +30,9 @@
 				<img src="${e.target.result}" alt="Preview" class="w-full h-auto object-contain">
 			`
 			document.getElementById("messageContainer").after(imageContainer)
+
+			// Start the scanning animation after the image is loaded
+			startScanningAnimation()
 		}
 		reader.readAsDataURL(file)
 	}
@@ -86,9 +89,8 @@
 			const formData = new FormData()
 			formData.append("image", selectedFile, selectedFile.name)
 
-			console.log("Displaying loading message and starting animation")
-			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
-			startScanningAnimation()
+			console.log("Displaying loading message")
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!")
 
 			console.log("Sending fetch request to /api/mainOrchestrator")
 			const response = await fetch("/api/mainOrchestrator", {
@@ -121,6 +123,8 @@
 		} finally {
 			isUploading = false
 			console.log(`analyzePhoto function completed`, new Date().toISOString())
+			// Clear the loading message
+			document.getElementById("messageContainer").innerHTML = ""
 		}
 	}
 
@@ -141,6 +145,12 @@
 			return
 		}
 
+		// Remove any existing scan line
+		const existingScanLine = document.getElementById("scanLine")
+		if (existingScanLine) {
+			existingScanLine.remove()
+		}
+
 		const scanLine = document.createElement("div")
 		scanLine.id = "scanLine"
 		scanLine.style.position = "absolute"
@@ -149,7 +159,6 @@
 		scanLine.style.height = "4px"
 		scanLine.style.backgroundColor = "rgba(0, 255, 0, 0.7)"
 		scanLine.style.boxShadow = "0 0 10px rgba(0, 255, 0, 0.7)"
-		scanLine.style.transition = "top 0.5s linear"
 		scanLine.style.top = "0"
 
 		imageContainer.style.position = "relative"
@@ -159,7 +168,7 @@
 		const animate = () => {
 			const containerHeight = imageContainer.offsetHeight
 			const scanLineHeight = scanLine.offsetHeight
-			const currentTop = parseInt(scanLine.style.top, 10)
+			const currentTop = parseInt(scanLine.style.top, 10) || 0
 
 			if (goingDown) {
 				scanLine.style.top = `${currentTop + 2}px`
