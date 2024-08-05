@@ -61,7 +61,11 @@
 
 		capturedImage = canvas.toDataURL("image/jpeg")
 		showCapturedImage()
-		canvas.toBlob(uploadPhoto, "image/jpeg")
+		canvas.toBlob((blob) => {
+			if (!isUploading) {
+				uploadPhoto(blob)
+			}
+		}, "image/jpeg")
 	}
 
 	// Function to show captured image
@@ -95,14 +99,13 @@
 	// Function to handle file upload
 	function handleFileUpload(event) {
 		const file = event.target.files[0]
-		if (file) {
+		if (file && !isUploading) {
 			uploadPhoto(file)
 		}
 	}
 
 	// Function to upload photo and analyze
 	let isUploading = false
-	let uploadCount = 0
 
 	async function uploadPhoto(blob) {
 		if (isUploading) {
@@ -111,8 +114,7 @@
 		}
 
 		isUploading = true
-		uploadCount++
-		console.log(`uploadPhoto function called (Count: ${uploadCount})`, new Date().toISOString())
+		console.log(`uploadPhoto function called`, new Date().toISOString())
 
 		try {
 			console.log("Creating FormData")
@@ -149,11 +151,10 @@
 			displayError("Error processing image. Please try again.")
 		} finally {
 			isUploading = false
-			console.log(`uploadPhoto function completed (Count: ${uploadCount})`, new Date().toISOString())
+			console.log(`uploadPhoto function completed`, new Date().toISOString())
 		}
 	}
 
-	// Add these new functions
 
 	function startScanningAnimation() {
 		const scanLine = document.createElement("div")
