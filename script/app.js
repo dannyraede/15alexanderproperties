@@ -211,24 +211,43 @@
 	}
 	// Function to display results
 	function displayResults(results) {
-		let resultsHTML = '<h2 class="text-xl font-bold mb-4">Analysis Results:</h2>'
+		let resultsHTML = '<div class="bg-white shadow-lg rounded-lg overflow-hidden">'
+		resultsHTML += '<div class="bg-blue-600 text-white px-4 py-2"><h2 class="text-xl font-bold">Analysis Results</h2></div>'
+		resultsHTML += '<div class="p-4">'
 
+		let hasResults = false
 		for (const [property, data] of Object.entries(results)) {
 			if (data.present) {
+				hasResults = true
 				resultsHTML += `
-					<div class="mb-4 p-4 bg-gray-100 rounded-lg">
-						<h3 class="text-lg font-semibold mb-2">${formatPropertyName(property)}</h3>
-						<p class="text-sm">${data.description}</p>
+					<div class="mb-4 last:mb-0">
+						<h3 class="text-lg font-semibold text-gray-800 mb-2">${formatPropertyName(property)}</h3>
+						<p class="text-gray-600 text-sm leading-relaxed">${data.description}</p>
 					</div>
 				`
 			}
 		}
 
-		if (resultsHTML === '<h2 class="text-xl font-bold mb-4">Analysis Results:</h2>') {
-			resultsHTML += '<p class="text-sm">No significant patterns were detected in this image.</p>'
+		if (!hasResults) {
+			resultsHTML += '<p class="text-gray-600 text-sm">No significant patterns were detected in this image.</p>'
 		}
 
+		resultsHTML += "</div>" // Close the p-4 div
+		resultsHTML += "</div>" // Close the main container div
+
+		// Add a "New Analysis" button
+		resultsHTML += `
+			<button id="newAnalysisBtn" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+				New Analysis
+			</button>
+		`
+
 		resultContainer.innerHTML = resultsHTML
+
+		// Add event listener to the new button
+		document.getElementById("newAnalysisBtn").addEventListener("click", () => {
+			location.reload()
+		})
 	}
 
 	// Helper function to format property names
