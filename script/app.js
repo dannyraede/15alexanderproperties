@@ -167,6 +167,11 @@
 		}
 	}
 
+	function disableUploadButtons() {
+		captureBtn.disabled = true
+		fileInput.disabled = true
+	}
+
 	function startScanningAnimation() {
 		const scanLine = document.createElement("div")
 		scanLine.id = "scanLine"
