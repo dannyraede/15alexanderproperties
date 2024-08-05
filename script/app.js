@@ -61,6 +61,7 @@
 	// Function to capture photo
 	function capturePhoto() {
 		logWithTimestamp("capturePhoto called")
+		logWithTimestamp(`State at start of capturePhoto - isCapturing: ${isCapturing}`)
 		if (isCapturing) {
 			logWithTimestamp("Capture already in progress, ignoring this call")
 			return
@@ -348,13 +349,17 @@
 	// Event listeners
 	captureBtn.addEventListener("click", () => {
 		logWithTimestamp("Capture button clicked")
+		logWithTimestamp(`Current state - isCapturing: ${isCapturing}, captureDebounceTimeout: ${captureDebounceTimeout !== null}`)
 		if (captureDebounceTimeout) {
 			logWithTimestamp("Debounce active, ignoring click")
 			return
 		}
 
+		logWithTimestamp("Setting captureDebounceTimeout")
 		captureDebounceTimeout = setTimeout(() => {
+			logWithTimestamp("Debounce timeout triggered")
 			captureDebounceTimeout = null
+			logWithTimestamp(`State before capturePhoto - isCapturing: ${isCapturing}`)
 			if (!isCapturing) {
 				capturePhoto()
 			} else {
