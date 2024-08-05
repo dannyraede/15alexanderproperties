@@ -8,20 +8,16 @@
 	const switchCameraBtn = document.getElementById("switchCameraBtn")
 	const cameraLoading = document.getElementById("cameraLoading")
 	const cameraPermission = document.getElementById("cameraPermission")
-	const newImageBtn = document.createElement("button") // New button
+	const newImageBtn = document.createElement("button")
 
 	let currentFacingMode = "environment"
 	let capturedImage = null // Store the captured image
 
-	// Function to log with timestamp
-	function logWithTimestamp(message) {
-		console.log(`[${new Date().toISOString()}] ${message}`)
-	}
+	let scanningAnimationId = null
 
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
 		try {
-			logWithTimestamp("Initializing camera...")
 			cameraLoading.classList.remove("hidden")
 			cameraPermission.classList.add("hidden")
 			video.classList.add("hidden")
@@ -33,12 +29,10 @@
 			currentFacingMode = facingMode
 
 			video.onloadedmetadata = () => {
-				logWithTimestamp("Camera initialized successfully")
 				cameraLoading.classList.add("hidden")
 				video.classList.remove("hidden")
 			}
 		} catch (err) {
-			logWithTimestamp(`Error accessing camera: ${err}`)
 			console.error("Error accessing camera:", err)
 			cameraLoading.classList.add("hidden")
 			cameraPermission.classList.remove("hidden")
@@ -48,7 +42,6 @@
 
 	// Function to switch camera
 	async function switchCamera() {
-		logWithTimestamp("Switching camera...")
 		const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
 		const currentStream = video.srcObject
 
@@ -58,12 +51,10 @@
 		}
 
 		await initCamera(newFacingMode)
-		logWithTimestamp("Camera switched successfully")
 	}
 
 	// Function to capture photo
 	function capturePhoto() {
-		logWithTimestamp("Capturing photo...")
 		canvas.width = video.videoWidth
 		canvas.height = video.videoHeight
 		canvas.getContext("2d").drawImage(video, 0, 0)
@@ -71,115 +62,221 @@
 		capturedImage = canvas.toDataURL("image/jpeg")
 		showCapturedImage()
 		canvas.toBlob((blob) => {
-			logWithTimestamp("Photo captured, preparing to upload...")
-			uploadPhoto(blob)
+			if (!isUploading) {
+				uploadPhoto(blob)
+			}
 		}, "image/jpeg")
 	}
 
 	// Function to show captured image
 	function showCapturedImage() {
-		logWithTimestamp("Displaying captured image...")
 		video.style.display = "none"
 		canvas.style.display = "block"
 		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
 		switchToNewImageButton()
-		logWithTimestamp("Captured image displayed")
 	}
 
 	// Function to switch to "New Image" button
 	function switchToNewImageButton() {
-		logWithTimestamp("Switching to 'New Image' button...")
 		captureBtn.style.display = "none"
 		fileInput.parentElement.style.display = "none"
 		newImageBtn.textContent = "New Image"
 		newImageBtn.className = captureBtn.className // Copy classes from captureBtn
 		newImageBtn.addEventListener("click", resetCapture)
 		resultContainer.appendChild(newImageBtn)
-		logWithTimestamp("Switched to 'New Image' button")
 	}
 
 	// Function to reset capture
 	function resetCapture() {
-		logWithTimestamp("Resetting capture...")
 		video.style.display = "block"
 		canvas.style.display = "none"
 		captureBtn.style.display = "block"
 		fileInput.parentElement.style.display = "block"
 		newImageBtn.remove()
 		resultContainer.innerHTML = ""
-		logWithTimestamp("Capture reset complete")
 	}
 
 	// Function to handle file upload
 	function handleFileUpload(event) {
-		logWithTimestamp("Handling file upload...")
 		const file = event.target.files[0]
-		if (file) {
-			logWithTimestamp(`File selected: ${file.name}`)
+		if (file && !isUploading) {
 			uploadPhoto(file)
 		}
 	}
 
 	// Function to upload photo and analyze
+	let isUploading = false
+	let hasUploaded = false
+
 	async function uploadPhoto(blob) {
+		if (hasUploaded) {
+			console.log("Upload already completed. Refresh the page to upload again.")
+			return
+		}
+
+		if (isUploading) {
+			console.log("Upload already in progress, ignoring this call")
+			return
+		}
+
+		isUploading = true
+		console.log(`uploadPhoto function called`, new Date().toISOString())
+
 		try {
-			logWithTimestamp("Starting photo upload and analysis...")
+			console.log("Creating FormData")
 			const formData = new FormData()
 			formData.append("image", blob, "building.jpg")
 
-			displayLoading("Uploading and analyzing image...")
+			console.log("Displaying loading message and starting animation")
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
+			startScanningAnimation()
 
-			logWithTimestamp("Sending request to /api/mainOrchestrator...")
+			console.log("Sending fetch request to /api/mainOrchestrator")
 			const response = await fetch("/api/mainOrchestrator", {
 				method: "POST",
 				body: formData,
 			})
 
+			console.log("Fetch request completed, stopping animation")
+			stopScanningAnimation()
+
 			if (!response.ok) {
+				console.error("Response not OK:", response.status, response.statusText)
 				throw new Error("Upload and analysis failed")
 			}
 
-			logWithTimestamp("Response received, processing results...")
+			console.log("Parsing response JSON")
 			const results = await response.json()
+			console.log("Results received:", JSON.stringify(results, null, 2))
+
+			console.log("Displaying results")
 			displayResults(results)
-			logWithTimestamp("Results displayed successfully")
+
+			// Set hasUploaded to true after successful upload
+			hasUploaded = true
+
+			// Disable upload buttons
+			disableUploadButtons()
 		} catch (error) {
-			logWithTimestamp(`Error processing image: ${error}`)
-			console.error("Error processing image:", error)
+			console.error("Error in uploadPhoto:", error.message)
+			stopScanningAnimation()
 			displayError("Error processing image. Please try again.")
+		} finally {
+			isUploading = false
+			console.log(`uploadPhoto function completed`, new Date().toISOString())
 		}
 	}
 
+	function startScanningAnimation() {
+		const scanLine = document.createElement("div")
+		scanLine.id = "scanLine"
+		scanLine.style.position = "absolute"
+		scanLine.style.left = "0"
+		scanLine.style.right = "0"
+		scanLine.style.height = "4px"
+		scanLine.style.backgroundColor = "rgba(0, 255, 0, 0.7)"
+		scanLine.style.boxShadow = "0 0 10px rgba(0, 255, 0, 0.7)"
+		scanLine.style.transition = "top 0.5s linear"
+		scanLine.style.top = "0"
+
+		const cameraContainer = document.getElementById("cameraContainer")
+		cameraContainer.style.position = "relative"
+		cameraContainer.appendChild(scanLine)
+
+		let goingDown = true
+		const animate = () => {
+			const containerHeight = cameraContainer.offsetHeight
+			const scanLineHeight = scanLine.offsetHeight
+			const currentTop = parseInt(scanLine.style.top, 10)
+
+			if (goingDown) {
+				scanLine.style.top = `${currentTop + 2}px`
+				if (currentTop + scanLineHeight >= containerHeight) {
+					goingDown = false
+				}
+			} else {
+				scanLine.style.top = `${currentTop - 2}px`
+				if (currentTop <= 0) {
+					goingDown = true
+				}
+			}
+			scanningAnimationId = requestAnimationFrame(animate)
+		}
+
+		animate()
+	}
+
+	function stopScanningAnimation() {
+		if (scanningAnimationId) {
+			cancelAnimationFrame(scanningAnimationId)
+			scanningAnimationId = null
+		}
+		const scanLine = document.getElementById("scanLine")
+		if (scanLine) {
+			scanLine.remove()
+		}
+		// Ensure the cameraContainer's position is reset
+		const cameraContainer = document.getElementById("cameraContainer")
+		if (cameraContainer) {
+			cameraContainer.style.position = ""
+		}
+	}
 	// Function to display results
 	function displayResults(results) {
-		logWithTimestamp("Displaying results...")
-		let resultsHTML = '<h2 class="text-xl font-bold mb-2">Results:</h2>'
+		let resultsHTML = ""
+
+		// Add a "New Analysis" button above the results
 		resultsHTML += `
-      <div class="mb-2">
-        <span class="font-semibold">Image URL:</span> 
-        <a href="${results.imageUrl}" target="_blank" class="text-blue-500 hover:underline">${results.imageUrl}</a>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Chain of Thought Analysis:</span>
-        <p class="text-sm">${results.cotAnalysis}</p>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Determination:</span>
-        <p class="text-sm">${results.determination}</p>
-      </div>
-      <div class="mb-2">
-        <span class="font-semibold">Deep Analysis:</span>
-        <p class="text-sm">${results.deepAnalysis}</p>
-      </div>
-    `
+			<button id="newAnalysisBtn" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 mb-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+				</svg>
+				New Analysis
+			</button>
+		`
+
+		resultsHTML += '<div class="bg-white shadow-lg rounded-lg overflow-hidden">'
+		resultsHTML += '<div class="bg-blue-600 text-white px-4 py-2"><h2 class="text-xl font-bold">Analysis Results</h2></div>'
+		resultsHTML += '<div class="p-4">'
+
+		let hasResults = false
+		for (const [property, data] of Object.entries(results)) {
+			if (data.present) {
+				hasResults = true
+				resultsHTML += `
+					<div class="mb-4 last:mb-0">
+						<h3 class="text-lg font-semibold text-gray-800 mb-2">${formatPropertyName(property)}</h3>
+						<p class="text-gray-600 text-sm leading-relaxed">${data.description.replace(/\n/g, "<br>")}</p>
+					</div>
+				`
+			}
+		}
+
+		if (!hasResults) {
+			resultsHTML += '<p class="text-gray-600 text-sm">No significant patterns were detected in this image.</p>'
+		}
+
+		resultsHTML += "</div>" // Close the p-4 div
+		resultsHTML += "</div>" // Close the main container div
 
 		resultContainer.innerHTML = resultsHTML
-		logWithTimestamp("Results displayed")
+
+		// Add event listener to the new button
+		document.getElementById("newAnalysisBtn").addEventListener("click", () => {
+			location.reload()
+		})
+	}
+
+	// Helper function to format property names
+	function formatPropertyName(property) {
+		return property
+			.split(/(?=[A-Z])/)
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ")
 	}
 
 	// Function to display error messages
 	function displayError(message) {
-		logWithTimestamp(`Displaying error: ${message}`)
 		resultContainer.innerHTML = `
       <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
@@ -190,12 +287,10 @@
         </div>
       </div>
     `
-		logWithTimestamp("Error displayed")
 	}
 
 	// Function to display loading messages
 	function displayLoading(message) {
-		logWithTimestamp(`Displaying loading message: ${message}`)
 		resultContainer.innerHTML = `
       <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
         <div class="flex items-center">
@@ -207,7 +302,6 @@
         </div>
       </div>
     `
-		logWithTimestamp("Loading message displayed")
 	}
 
 	// Event listeners
@@ -216,7 +310,6 @@
 	switchCameraBtn.addEventListener("click", switchCamera)
 
 	// Initialize camera when the page loads
-	logWithTimestamp("Initializing camera on page load...")
 	initCamera()
 
 	// Function to check if the device is mobile
@@ -226,10 +319,8 @@
 
 	// Show/hide switch camera button based on device type
 	if (isMobile()) {
-		logWithTimestamp("Mobile device detected, showing switch camera button")
 		switchCameraBtn.style.display = "block"
 	} else {
-		logWithTimestamp("Non-mobile device detected, hiding switch camera button")
 		switchCameraBtn.style.display = "none"
 	}
 })()
