@@ -65,13 +65,19 @@
 
 	// Function to show captured image
 	function showCapturedImage() {
+		console.log("showCapturedImage called")
 		video.style.display = "none"
 		canvas.style.display = "block"
 		switchToNewImageButton()
-		
+
 		canvas.toBlob((blob) => {
+			console.log("canvas.toBlob callback triggered")
 			if (!isUploading && !hasUploaded) {
-				 uploadPhoto(blob)
+				console.log("Conditions met, calling uploadPhoto")
+				uploadPhoto(blob)
+			} else {
+				console.log("Conditions not met, skipping uploadPhoto")
+				console.log("isUploading:", isUploading, "hasUploaded:", hasUploaded)
 			}
 		}, "image/jpeg")
 	}
@@ -109,6 +115,7 @@
 	let hasUploaded = false
 
 	async function uploadPhoto(blob) {
+		console.log("uploadPhoto called with blob:", blob)
 		if (hasUploaded) {
 			console.log("Upload already completed. Refresh the page to upload again.")
 			return
@@ -169,12 +176,12 @@
 
 	function disableUploadButtons() {
 		captureBtn.disabled = true
-		captureBtn.classList.add('opacity-50', 'cursor-not-allowed')
+		captureBtn.classList.add("opacity-50", "cursor-not-allowed")
 		fileInput.disabled = true
-		fileInput.classList.add('opacity-50', 'cursor-not-allowed')
+		fileInput.classList.add("opacity-50", "cursor-not-allowed")
 		if (switchCameraBtn) {
 			switchCameraBtn.disabled = true
-			switchCameraBtn.classList.add('opacity-50', 'cursor-not-allowed')
+			switchCameraBtn.classList.add("opacity-50", "cursor-not-allowed")
 		}
 	}
 
