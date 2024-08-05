@@ -90,7 +90,7 @@
 			formData.append("image", selectedFile, selectedFile.name)
 
 			console.log("Displaying loading message")
-			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!")
+			displayLoading()
 
 			console.log("Sending fetch request to /api/mainOrchestrator")
 			const response = await fetch("/api/mainOrchestrator", {
@@ -215,9 +215,6 @@
 		// Add "New Analysis" button
 		resultsHTML += `
 			<button id="newAnalysisBtn" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 mb-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-				</svg>
 				New Analysis
 			</button>
 		`
@@ -285,21 +282,38 @@
 	}
 
 	/**
-	 * Displays a loading message
-	 * @param {string} message - The loading message to display
+	 * Displays a loading message with a progress bar
 	 */
-	function displayLoading(message) {
-		document.getElementById("messageContainer").innerHTML = `
+	function displayLoading() {
+		const messageContainer = document.getElementById("messageContainer")
+		messageContainer.innerHTML = `
 			<div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
-				<div class="flex items-center">
+				<div class="flex items-center mb-2">
 					<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
 						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 					</svg>
-					<p>${message}</p>
+					<p>Analyzing image...</p>
 				</div>
+				<div class="w-full bg-blue-200 rounded-full h-2.5">
+					<div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+				</div>
+				<p class="text-sm mt-2">This may take up to 60 seconds. Please be patient.</p>
 			</div>
 		`
+
+		// Simulate progress
+		let progress = 0
+		const interval = setInterval(() => {
+			progress += 1
+			const progressBar = document.getElementById("progressBar")
+			if (progressBar) {
+				progressBar.style.width = `${Math.min(progress, 100)}%`
+			}
+			if (progress >= 100) {
+				clearInterval(interval)
+			}
+		}, 600) // 60 seconds / 100 steps = 600ms per step
 	}
 
 	// Event listeners
