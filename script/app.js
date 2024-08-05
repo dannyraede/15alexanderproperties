@@ -84,6 +84,11 @@
 
 	// Function to show captured image
 	function showCapturedImage() {
+		if (isUploading || hasUploaded) {
+			logWithTimestamp("Upload already in progress or completed, skipping showCapturedImage")
+			return
+		}
+
 		logWithTimestamp("showCapturedImage called")
 		video.style.display = "none"
 		canvas.style.display = "block"
@@ -350,12 +355,14 @@
 	captureBtn.addEventListener("click", () => {
 		logWithTimestamp("Capture button clicked")
 		logWithTimestamp(`Current state - isCapturing: ${isCapturing}, captureDebounceTimeout: ${captureDebounceTimeout !== null}`)
+		
+		// Clear the previous timeout if it exists
 		if (captureDebounceTimeout) {
-			logWithTimestamp("Debounce active, ignoring click")
-			return
+			logWithTimestamp("Clearing previous debounce timeout")
+			clearTimeout(captureDebounceTimeout)
 		}
 
-		logWithTimestamp("Setting captureDebounceTimeout")
+		logWithTimestamp("Setting new captureDebounceTimeout")
 		captureDebounceTimeout = setTimeout(() => {
 			logWithTimestamp("Debounce timeout triggered")
 			captureDebounceTimeout = null
@@ -365,7 +372,7 @@
 			} else {
 				logWithTimestamp("Capture already in progress, ignoring this click")
 			}
-		}, 900) // 900ms debounce time
+		}, 1000) // 1000ms debounce time
 	})
 	fileInput.addEventListener("change", handleFileUpload)
 	switchCameraBtn.addEventListener("click", switchCamera)
