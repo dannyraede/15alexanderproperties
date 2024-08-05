@@ -1,131 +1,67 @@
 ;(function () {
 	// DOM elements
-	const video = document.getElementById("video")
-	const canvas = document.getElementById("canvas")
-	const captureBtn = document.getElementById("captureBtn")
 	const fileInput = document.getElementById("fileInput")
 	const resultContainer = document.getElementById("resultContainer")
-	const switchCameraBtn = document.getElementById("switchCameraBtn")
-	const cameraLoading = document.getElementById("cameraLoading")
-	const cameraPermission = document.getElementById("cameraPermission")
-	const newImageBtn = document.createElement("button")
+	const uploadBox = document.getElementById("uploadBox")
+	const analyzeBtn = document.getElementById("analyzeBtn")
 
-	let currentFacingMode = "environment"
-	let capturedImage = null // Store the captured image
-
-	let scanningAnimationId = null
-
-	// Function to initialize the camera
-	async function initCamera(facingMode = "environment") {
-		try {
-			cameraLoading.classList.remove("hidden")
-			cameraPermission.classList.add("hidden")
-			video.classList.add("hidden")
-
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: facingMode },
-			})
-			video.srcObject = stream
-			currentFacingMode = facingMode
-
-			video.onloadedmetadata = () => {
-				cameraLoading.classList.add("hidden")
-				video.classList.remove("hidden")
-			}
-		} catch (err) {
-			console.error("Error accessing camera:", err)
-			cameraLoading.classList.add("hidden")
-			cameraPermission.classList.remove("hidden")
-			displayError("Error accessing camera. Please check your permissions.")
-		}
-	}
-
-	// Function to switch camera
-	async function switchCamera() {
-		const newFacingMode = currentFacingMode === "environment" ? "user" : "environment"
-		const currentStream = video.srcObject
-
-		// Stop all tracks on the current stream
-		if (currentStream) {
-			currentStream.getTracks().forEach((track) => track.stop())
-		}
-
-		await initCamera(newFacingMode)
-	}
-
-	// Function to capture photo
-	function capturePhoto() {
-		canvas.width = video.videoWidth
-		canvas.height = video.videoHeight
-		canvas.getContext("2d").drawImage(video, 0, 0)
-
-		capturedImage = canvas.toDataURL("image/jpeg")
-		showCapturedImage()
-		canvas.toBlob((blob) => {
-			if (!isUploading) {
-				uploadPhoto(blob)
-			}
-		}, "image/jpeg")
-	}
-
-	// Function to show captured image
-	function showCapturedImage() {
-		video.style.display = "none"
-		canvas.style.display = "block"
-		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
-		switchToNewImageButton()
-	}
-
-	// Function to switch to "New Image" button
-	function switchToNewImageButton() {
-		captureBtn.style.display = "none"
-		fileInput.parentElement.style.display = "none"
-		newImageBtn.textContent = "New Image"
-		newImageBtn.className = captureBtn.className // Copy classes from captureBtn
-		newImageBtn.addEventListener("click", resetCapture)
-		resultContainer.appendChild(newImageBtn)
-	}
-
-	// Function to reset capture
-	function resetCapture() {
-		video.style.display = "block"
-		canvas.style.display = "none"
-		captureBtn.style.display = "block"
-		fileInput.parentElement.style.display = "block"
-		newImageBtn.remove()
-		resultContainer.innerHTML = ""
-	}
-
-	// Function to handle file upload
-	function handleFileUpload(event) {
-		const file = event.target.files[0]
-		if (file && !isUploading) {
-			uploadPhoto(file)
-		}
-	}
-
-	// Function to upload photo and analyze
+	let selectedFile = null
 	let isUploading = false
 	let hasUploaded = false
 
-	async function uploadPhoto(blob) {
-		if (hasUploaded) {
-			console.log("Upload already completed. Refresh the page to upload again.")
-			return
+	// Function to display file preview
+	function displayFilePreview(file) {
+		const reader = new FileReader()
+		reader.onload = function (e) {
+			uploadBox.innerHTML = `
+				<div class="flex flex-col items-center">
+					<img src="${e.target.result}" alt="Preview" class="max-w-full max-h-32 object-contain mb-2">
+					<p class="text-xs text-gray-400">${file.name}</p>
+				</div>
+				<p class="text-sm text-gray-500 mt-2">Click "Analyze" to process the image</p>
+			`
 		}
+		reader.readAsDataURL(file)
+	}
 
-		if (isUploading) {
-			console.log("Upload already in progress, ignoring this call")
+	// Function to handle file selection
+	function handleFileSelect(file) {
+		if (file) {
+			selectedFile = file
+			displayFilePreview(file)
+			analyzeBtn.disabled = false
+		}
+	}
+
+	// Function to handle drag and drop
+	function handleDragDrop(e) {
+		e.preventDefault()
+		e.stopPropagation()
+
+		if (e.type === "dragover") {
+			uploadBox.classList.add("border-blue-500")
+		} else if (e.type === "dragleave") {
+			uploadBox.classList.remove("border-blue-500")
+		} else if (e.type === "drop") {
+			uploadBox.classList.remove("border-blue-500")
+			const file = e.dataTransfer.files[0]
+			handleFileSelect(file)
+		}
+	}
+
+	// Function to analyze photo
+	async function analyzePhoto() {
+		if (!selectedFile || isUploading || hasUploaded) {
 			return
 		}
 
 		isUploading = true
-		console.log(`uploadPhoto function called`, new Date().toISOString())
+		console.log(`analyzePhoto function called`, new Date().toISOString())
 
 		try {
 			console.log("Creating FormData")
 			const formData = new FormData()
-			formData.append("image", blob, "building.jpg")
+			formData.append("image", selectedFile, selectedFile.name)
 
 			console.log("Displaying loading message and starting animation")
 			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
@@ -158,18 +94,18 @@
 			// Disable upload buttons
 			disableUploadButtons()
 		} catch (error) {
-			console.error("Error in uploadPhoto:", error.message)
+			console.error("Error in analyzePhoto:", error.message)
 			stopScanningAnimation()
 			displayError("Error processing image. Please try again.")
 		} finally {
 			isUploading = false
-			console.log(`uploadPhoto function completed`, new Date().toISOString())
+			console.log(`analyzePhoto function completed`, new Date().toISOString())
 		}
 	}
 
 	function disableUploadButtons() {
-		captureBtn.disabled = true
 		fileInput.disabled = true
+		analyzeBtn.disabled = true
 	}
 
 	function startScanningAnimation() {
@@ -310,22 +246,17 @@
 	}
 
 	// Event listeners
-	captureBtn.addEventListener("click", capturePhoto)
-	fileInput.addEventListener("change", handleFileUpload)
-	switchCameraBtn.addEventListener("click", switchCamera)
+	uploadBox.addEventListener("dragover", handleDragDrop)
+	uploadBox.addEventListener("dragleave", handleDragDrop)
+	uploadBox.addEventListener("drop", handleDragDrop)
+	analyzeBtn.addEventListener("click", analyzePhoto)
 
-	// Initialize camera when the page loads
-	initCamera()
+	// Add these new event listeners
+	uploadBox.addEventListener("click", () => {
+		fileInput.click()
+	})
 
-	// Function to check if the device is mobile
-	function isMobile() {
-		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-	}
-
-	// Show/hide switch camera button based on device type
-	if (isMobile()) {
-		switchCameraBtn.style.display = "block"
-	} else {
-		switchCameraBtn.style.display = "none"
-	}
+	fileInput.addEventListener("change", (e) => {
+		handleFileSelect(e.target.files[0])
+	})
 })()
