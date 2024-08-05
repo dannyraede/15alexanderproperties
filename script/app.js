@@ -106,11 +106,17 @@
 
 	// Function to upload photo and analyze
 	let isUploading = false
+	let hasUploaded = false
 
 	async function uploadPhoto(blob) {
+		if (hasUploaded) {
+			console.log("Upload already completed. Refresh the page to upload again.");
+			return;
+		}
+
 		if (isUploading) {
-			console.log("Upload already in progress, ignoring this call")
-			return
+			console.log("Upload already in progress, ignoring this call");
+			return;
 		}
 
 		isUploading = true
@@ -145,6 +151,12 @@
 
 			console.log("Displaying results")
 			displayResults(results)
+
+			// Set hasUploaded to true after successful upload
+			hasUploaded = true
+
+			// Disable upload buttons
+			disableUploadButtons()
 		} catch (error) {
 			console.error("Error in uploadPhoto:", error.message)
 			stopScanningAnimation()
@@ -154,7 +166,6 @@
 			console.log(`uploadPhoto function completed`, new Date().toISOString())
 		}
 	}
-
 
 	function startScanningAnimation() {
 		const scanLine = document.createElement("div")
