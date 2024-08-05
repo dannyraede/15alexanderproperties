@@ -67,12 +67,11 @@
 	function showCapturedImage() {
 		video.style.display = "none"
 		canvas.style.display = "block"
-		canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height)
 		switchToNewImageButton()
 		
 		canvas.toBlob((blob) => {
 			if (!isUploading && !hasUploaded) {
-				uploadPhoto(blob)
+				 uploadPhoto(blob)
 			}
 		}, "image/jpeg")
 	}
