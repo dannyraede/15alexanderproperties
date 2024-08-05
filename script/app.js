@@ -15,6 +15,8 @@
 
 	let scanningAnimationId = null
 	let uploadTimeout = null
+	let isUploading = false
+	let hasUploaded = false
 
 	// Function to initialize the camera
 	async function initCamera(facingMode = "environment") {
@@ -66,27 +68,28 @@
 
 	// Function to show captured image
 	function showCapturedImage() {
-		console.log("showCapturedImage called")
+		logWithTimestamp("showCapturedImage called")
 		video.style.display = "none"
 		canvas.style.display = "block"
 		switchToNewImageButton()
 
 		canvas.toBlob((blob) => {
-			console.log("canvas.toBlob callback triggered")
+			logWithTimestamp(`canvas.toBlob callback triggered (blob size: ${blob.size} bytes)`)
 			if (!isUploading && !hasUploaded) {
-				console.log("Conditions met, scheduling uploadPhoto")
+				logWithTimestamp("Conditions met, scheduling uploadPhoto")
 				clearTimeout(uploadTimeout)
 				uploadTimeout = setTimeout(() => {
+					logWithTimestamp("Timeout callback triggered")
 					if (!isUploading && !hasUploaded) {
-						console.log("Executing uploadPhoto")
+						logWithTimestamp("Executing uploadPhoto")
 						uploadPhoto(blob)
 					} else {
-						console.log("Upload already in progress or completed, skipping")
+						logWithTimestamp(`Upload skipped. isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`)
 					}
-				}, 50) // 50ms delay
+				}, 50)
 			} else {
-				console.log("Conditions not met, skipping uploadPhoto")
-				console.log("isUploading:", isUploading, "hasUploaded:", hasUploaded)
+				logWithTimestamp("Conditions not met, skipping uploadPhoto")
+				logWithTimestamp(`isUploading: ${isUploading}, hasUploaded: ${hasUploaded}`)
 			}
 		}, "image/jpeg")
 	}
@@ -120,52 +123,49 @@
 	}
 
 	// Function to upload photo and analyze
-	let isUploading = false
-	let hasUploaded = false
-
 	async function uploadPhoto(blob) {
-		console.log("uploadPhoto called with blob:", blob)
+		logWithTimestamp("uploadPhoto called with blob")
 		if (hasUploaded) {
-			console.log("Upload already completed. Refresh the page to upload again.")
+			logWithTimestamp("Upload already completed. Refresh the page to upload again.")
 			return
 		}
 
 		if (isUploading) {
-			console.log("Upload already in progress, ignoring this call")
+			logWithTimestamp("Upload already in progress, ignoring this call")
 			return
 		}
 
 		isUploading = true
-		console.log(`uploadPhoto function called`, new Date().toISOString())
+		logWithTimestamp(`uploadPhoto function called`)
 
 		try {
-			console.log("Creating FormData")
+			logWithTimestamp("Creating FormData")
 			const formData = new FormData()
 			formData.append("image", blob, "building.jpg")
 
-			console.log("Displaying loading message and starting animation")
+			logWithTimestamp("Displaying loading message and starting animation")
 			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
 			startScanningAnimation()
 
-			console.log("Sending fetch request to /api/mainOrchestrator")
+			logWithTimestamp("Sending fetch request to /api/mainOrchestrator")
 			const response = await fetch("/api/mainOrchestrator", {
 				method: "POST",
 				body: formData,
 			})
 
-			console.log("Fetch request completed, stopping animation")
+			logWithTimestamp("Fetch request completed, stopping animation")
 			stopScanningAnimation()
 
 			if (!response.ok) {
-				console.error("Response not OK:", response.status, response.statusText)
+				logWithTimestamp(`Response not OK: ${response.status} ${response.statusText}`)
 				throw new Error("Upload and analysis failed")
 			}
 
-			console.log("Parsing response JSON")
+			logWithTimestamp("Parsing response JSON")
 			const results = await response.json()
-			console.log("Results received:", JSON.stringify(results, null, 2))
+			logWithTimestamp(`Results received: ${JSON.stringify(results, null, 2)}`)
 
-			console.log("Displaying results")
+			logWithTimestamp("Displaying results")
 			displayResults(results)
 
 			// Set hasUploaded to true after successful upload
@@ -174,12 +174,12 @@
 			// Disable upload buttons
 			disableUploadButtons()
 		} catch (error) {
-			console.error("Error in uploadPhoto:", error.message)
+			logWithTimestamp(`Error in uploadPhoto: ${error.message}`)
 			stopScanningAnimation()
 			displayError("Error processing image. Please try again.")
 		} finally {
 			isUploading = false
-			console.log(`uploadPhoto function completed`, new Date().toISOString())
+			logWithTimestamp(`uploadPhoto function completed`)
 		}
 	}
 
@@ -349,5 +349,9 @@
 		switchCameraBtn.style.display = "block"
 	} else {
 		switchCameraBtn.style.display = "none"
+	}
+
+	function logWithTimestamp(message) {
+		console.log(`${new Date().toISOString()} - ${message}`)
 	}
 })()
