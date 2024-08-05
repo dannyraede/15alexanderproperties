@@ -1,4 +1,6 @@
+// Import necessary modules and prompts
 import fetch from "node-fetch"
+// Import system prompts for each property
 import { LEVELSOFSCALE_SYSTEM_PROMPT } from "../prompts/properties/1_levelsOfScale.mjs"
 import { STRONGCENTERS_SYSTEM_PROMPT } from "../prompts/properties/2_strongCenters.mjs"
 import { BOUNDARIES_SYSTEM_PROMPT } from "../prompts/properties/3_boundaries.mjs"
@@ -15,6 +17,7 @@ import { THEVOID_SYSTEM_PROMPT } from "../prompts/properties/13_theVoid.mjs"
 import { SIMPLICITYANDINNERCALM_SYSTEM_PROMPT } from "../prompts/properties/14_simplicityAndInnerCalm.mjs"
 import { NOTSEPARATENESS_SYSTEM_PROMPT } from "../prompts/properties/15_notSeparateness.mjs"
 
+// Import definitions for each property
 import { LEVELSOFSCALE_DEFINITION } from "../prompts/definitions/1_levelsOfScale_definition.mjs"
 import { STRONGCENTERS_DEFINITION } from "../prompts/definitions/2_strongCenters_definition.mjs"
 import { BOUNDARIES_DEFINITION } from "../prompts/definitions/3_boundaries_definition.mjs"
@@ -33,6 +36,7 @@ import { NOTSEPARATENESS_DEFINITION } from "../prompts/definitions/15_notSeparat
 
 console.log("Starting deep analysis module")
 
+// Object containing system prompts for each property
 const propertyPrompts = {
 	levelsOfScale: LEVELSOFSCALE_SYSTEM_PROMPT,
 	strongCenters: STRONGCENTERS_SYSTEM_PROMPT,
@@ -51,6 +55,7 @@ const propertyPrompts = {
 	notSeparateness: NOTSEPARATENESS_SYSTEM_PROMPT,
 }
 
+// Object containing definitions for each property
 const propertyDefinitions = {
 	levelsOfScale: LEVELSOFSCALE_DEFINITION,
 	strongCenters: STRONGCENTERS_DEFINITION,
@@ -71,11 +76,24 @@ const propertyDefinitions = {
 
 console.log("Property prompts and definitions initialized")
 
+/**
+ * Merges the definition into the prompt by replacing the placeholder.
+ * @param {string} prompt - The system prompt for a property.
+ * @param {string} definition - The definition of the property.
+ * @returns {string} The merged prompt with the definition included.
+ */
 function mergeDefinition(prompt, definition) {
 	console.log("Merging definition for prompt")
 	return prompt.replace("{{DEFINITION}}", definition)
 }
 
+/**
+ * Analyzes a specific property for the given image using OpenAI's API.
+ * @param {string} property - The property to analyze.
+ * @param {string} imageUrl - The URL of the image to analyze.
+ * @returns {Promise<string>} The analysis result for the property.
+ * @throws {Error} If the API request fails after maximum retries.
+ */
 async function analyzeProperty(property, imageUrl) {
 	console.log(`Starting analysis for property: ${property}`)
 	const apiKey = process.env.OPENAI_API_KEY
@@ -110,6 +128,7 @@ async function analyzeProperty(property, imageUrl) {
 	const maxRetries = 3
 	const retryDelay = 1000 // 1 second
 
+	// Retry loop for API requests
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		console.log(`Attempt ${attempt} of ${maxRetries} for property: ${property}`)
 		try {
@@ -147,6 +166,12 @@ async function analyzeProperty(property, imageUrl) {
 	}
 }
 
+/**
+ * Generates a deep analysis for the image based on the determination results.
+ * @param {string} imageUrl - The URL of the image to analyze.
+ * @param {Object} determinationResult - The result of the initial determination of properties.
+ * @returns {Promise<Object>} An object containing the deep analysis results for up to three properties.
+ */
 async function generateDeepAnalysis(imageUrl, determinationResult) {
 	console.log("Starting deep analysis generation")
 	const deepAnalysisResults = {}

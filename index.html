@@ -9,8 +9,10 @@
 		<link rel="icon" href="favicon.ico" type="image/x-icon" />
 	</head>
 	<body class="bg-gray-100 flex flex-col items-center min-h-screen p-4">
-		<h1 class="text-3xl font-bold mb-4 mt-4">15 Fundamental Patterns Analyzer</h1>
-		<p class="text-center text-gray-600 mb-6">Analyze architecture for Christopher Alexander's 15 fundamental patterns using AI</p>
+		<div class="flex flex-col items-center w-full max-w-md mb-6">
+			<h1 class="text-3xl font-bold mb-4 mt-4 text-center">15 Fundamental Patterns Analyzer</h1>
+			<p class="text-center text-gray-600">Analyze architecture for Christopher Alexander's 15 fundamental patterns using AI</p>
+		</div>
 		<div id="uploadBox" class="w-full max-w-md mb-4 p-8 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-blue-500 transition duration-300">
 			<svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -19,7 +21,7 @@
 			<p class="mt-1 text-xs text-gray-500">Accepted formats: .jpg, .png</p>
 			<input type="file" id="fileInput" accept="image/jpeg, image/png" class="hidden" />
 		</div>
-		<button id="analyzeBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 mb-4" disabled>Analyze</button>
+		<button id="analyzeBtn" class="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 mb-4" disabled>Analyze</button>
 
 		<div id="resultContainer" class="mt-4 w-full max-w-md">
 			<!-- Results will be displayed here -->

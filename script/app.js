@@ -1,20 +1,28 @@
+// Immediately Invoked Function Expression (IIFE) to encapsulate the code and avoid polluting the global scope
 ;(function () {
-	// DOM elements
+	// DOM element references
 	const fileInput = document.getElementById("fileInput")
 	const resultContainer = document.getElementById("resultContainer")
 	const uploadBox = document.getElementById("uploadBox")
 	const analyzeBtn = document.getElementById("analyzeBtn")
 
+	// State variables
 	let selectedFile = null
 	let isUploading = false
 	let hasUploaded = false
+	let scanningAnimationId = null
 
-	// Function to display file preview
+	/**
+	 * Displays a preview of the selected file
+	 * @param {File} file - The file to preview
+	 */
 	function displayFilePreview(file) {
 		const reader = new FileReader()
 		reader.onload = function (e) {
+			// Hide the upload box
 			uploadBox.style.display = "none"
 
+			// Create and insert the image preview container
 			const imageContainer = document.createElement("div")
 			imageContainer.id = "imageContainer"
 			imageContainer.className = "w-full max-w-md mx-auto mb-4 relative"
@@ -22,22 +30,26 @@
 				<img src="${e.target.result}" alt="Preview" class="w-full h-auto object-contain">
 			`
 			uploadBox.parentNode.insertBefore(imageContainer, uploadBox)
-
-			analyzeBtn.disabled = false
 		}
 		reader.readAsDataURL(file)
 	}
 
-	// Function to handle file selection
+	/**
+	 * Handles file selection
+	 * @param {File} file - The selected file
+	 */
 	function handleFileSelect(file) {
 		if (file) {
 			selectedFile = file
 			displayFilePreview(file)
-			analyzeBtn.disabled = false
+			analyzePhoto()
 		}
 	}
 
-	// Function to handle drag and drop
+	/**
+	 * Handles drag and drop events
+	 * @param {Event} e - The drag event
+	 */
 	function handleDragDrop(e) {
 		e.preventDefault()
 		e.stopPropagation()
@@ -53,7 +65,9 @@
 		}
 	}
 
-	// Function to analyze photo
+	/**
+	 * Analyzes the selected photo
+	 */
 	async function analyzePhoto() {
 		if (!selectedFile || isUploading || hasUploaded) {
 			return
@@ -62,16 +76,13 @@
 		isUploading = true
 		console.log(`analyzePhoto function called`, new Date().toISOString())
 
-		// Hide the analyze button
-		analyzeBtn.style.display = "none"
-
 		try {
 			console.log("Creating FormData")
 			const formData = new FormData()
 			formData.append("image", selectedFile, selectedFile.name)
 
 			console.log("Displaying loading message and starting animation")
-			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!")
+			displayLoading("Analyzing image... (This can take up to 60 sec, be patient!)")
 			startScanningAnimation()
 
 			console.log("Sending fetch request to /api/mainOrchestrator")
@@ -95,10 +106,8 @@
 			console.log("Displaying results")
 			displayResults(results)
 
-			// Set hasUploaded to true after successful upload
 			hasUploaded = true
 
-			// Disable upload buttons
 			disableUploadButtons()
 		} catch (error) {
 			console.error("Error in analyzePhoto:", error.message)
@@ -110,11 +119,16 @@
 		}
 	}
 
+	/**
+	 * Disables upload buttons after successful upload
+	 */
 	function disableUploadButtons() {
 		fileInput.disabled = true
-		analyzeBtn.disabled = true
 	}
 
+	/**
+	 * Starts the scanning animation
+	 */
 	function startScanningAnimation() {
 		const scanLine = document.createElement("div")
 		scanLine.id = "scanLine"
@@ -154,6 +168,9 @@
 		animate()
 	}
 
+	/**
+	 * Stops the scanning animation
+	 */
 	function stopScanningAnimation() {
 		if (scanningAnimationId) {
 			cancelAnimationFrame(scanningAnimationId)
@@ -163,17 +180,20 @@
 		if (scanLine) {
 			scanLine.remove()
 		}
-		// Ensure the imageContainer's position is reset
 		const imageContainer = document.getElementById("imageContainer")
 		if (imageContainer) {
 			imageContainer.style.position = ""
 		}
 	}
-	// Function to display results
+
+	/**
+	 * Displays the analysis results
+	 * @param {Object} results - The analysis results
+	 */
 	function displayResults(results) {
 		let resultsHTML = ""
 
-		// Add a "New Analysis" button above the results
+		// Add "New Analysis" button
 		resultsHTML += `
 			<button id="newAnalysisBtn" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 mb-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -183,6 +203,7 @@
 			</button>
 		`
 
+		// Create results container
 		resultsHTML += '<div class="bg-white shadow-lg rounded-lg overflow-hidden">'
 		resultsHTML += '<div class="bg-blue-600 text-white px-4 py-2"><h2 class="text-xl font-bold">Analysis Results</h2></div>'
 		resultsHTML += '<div class="p-4">'
@@ -204,18 +225,22 @@
 			resultsHTML += '<p class="text-gray-600 text-sm">No significant patterns were detected in this image.</p>'
 		}
 
-		resultsHTML += "</div>" // Close the p-4 div
-		resultsHTML += "</div>" // Close the main container div
+		resultsHTML += "</div>"
+		resultsHTML += "</div>"
 
 		resultContainer.innerHTML = resultsHTML
 
-		// Add event listener to the new button
+		// Add event listener to the "New Analysis" button
 		document.getElementById("newAnalysisBtn").addEventListener("click", () => {
 			location.reload()
 		})
 	}
 
-	// Helper function to format property names
+	/**
+	 * Formats the property name for display
+	 * @param {string} property - The property name to format
+	 * @returns {string} The formatted property name
+	 */
 	function formatPropertyName(property) {
 		return property
 			.split(/(?=[A-Z])/)
@@ -223,7 +248,10 @@
 			.join(" ")
 	}
 
-	// Function to display error messages
+	/**
+	 * Displays an error message
+	 * @param {string} message - The error message to display
+	 */
 	function displayError(message) {
 		resultContainer.innerHTML = `
       <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded" role="alert">
@@ -237,7 +265,10 @@
     `
 	}
 
-	// Function to display loading messages
+	/**
+	 * Displays a loading message
+	 * @param {string} message - The loading message to display
+	 */
 	function displayLoading(message) {
 		resultContainer.innerHTML = `
       <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
@@ -256,9 +287,7 @@
 	uploadBox.addEventListener("dragover", handleDragDrop)
 	uploadBox.addEventListener("dragleave", handleDragDrop)
 	uploadBox.addEventListener("drop", handleDragDrop)
-	analyzeBtn.addEventListener("click", analyzePhoto)
 
-	// Add these new event listeners
 	uploadBox.addEventListener("click", () => {
 		fileInput.click()
 	})

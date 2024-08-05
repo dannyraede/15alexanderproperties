@@ -3,10 +3,17 @@ import { put } from "@vercel/blob"
 import sharp from "sharp"
 import { v4 as uuidv4 } from "uuid"
 
+/**
+ * Uploads and processes an image file.
+ * @param {Object} req - The HTTP request object.
+ * @returns {Promise<Object>} An object containing the URL of the uploaded image.
+ * @throws {Error} If the upload or processing fails.
+ */
 export async function uploadImage(req) {
 	console.log("Starting uploadImage function")
 	const form = new IncomingForm()
 
+	// Parse the form data
 	console.log("Parsing form data")
 	const [fields, files] = await new Promise((resolve, reject) => {
 		form.parse(req, (err, fields, files) => {
@@ -20,6 +27,7 @@ export async function uploadImage(req) {
 	})
 	console.log("Form data parsed:", { fields, files: JSON.stringify(files, null, 2) })
 
+	// Extract the image file from the parsed form data
 	const fileArray = files.image
 	console.log("Image file array:", JSON.stringify(fileArray, null, 2))
 
@@ -38,6 +46,7 @@ export async function uploadImage(req) {
 
 	console.log("File path:", file.filepath)
 
+	// Resize the image
 	console.log("Resizing image")
 	let resizedImageBuffer
 	try {
@@ -48,6 +57,7 @@ export async function uploadImage(req) {
 		let height = metadata.height;
 		const aspectRatio = width / height;
 
+		// Limit maximum dimension to 2000 pixels
 		if (width > 2000 || height > 2000) {
 			if (aspectRatio > 1) {
 				width = 2000;
@@ -58,6 +68,7 @@ export async function uploadImage(req) {
 			}
 		}
 
+		// Further resize if both dimensions are larger than 768 pixels
 		if (width > 768 && height > 768) {
 			if (width < height) {
 				width = 768;
@@ -83,6 +94,7 @@ export async function uploadImage(req) {
 		throw new Error(`Failed to process image: ${error.message}`)
 	}
 
+	// Generate a unique filename for the image
 	const timestamp = Date.now()
 	const newFilename = `15alexanderproperties-blob/${uuidv4()}-${timestamp}.jpg`
 	console.log("New filename:", newFilename)
@@ -121,11 +133,16 @@ export async function uploadImage(req) {
 	return { imageUrl: url }
 }
 
-// Keep the default export for direct API calls if needed
+/**
+ * API handler for image uploads.
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} res - The HTTP response object.
+ */
 export default async function handler(req, res) {
 	console.log("Handler function called")
 	console.log("Request method:", req.method)
 
+	// Ensure the request method is POST
 	if (req.method !== "POST") {
 		console.log("Method not allowed")
 		return res.status(405).json({ error: "Method Not Allowed" })

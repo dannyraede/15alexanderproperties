@@ -1,3 +1,4 @@
+// Import necessary modules and definitions
 import fetch from "node-fetch"
 import { COT_SYSTEM_PROMPT } from "../prompts/COT.mjs"
 import { LEVELSOFSCALE_DEFINITION } from "../prompts/definitions/1_levelsOfScale_definition.mjs"
@@ -16,6 +17,11 @@ import { THEVOID_DEFINITION } from "../prompts/definitions/13_theVoid_definition
 import { SIMPLICITYANDINNERCALM_DEFINITION } from "../prompts/definitions/14_simplicityAndInnerCalm_definition.mjs"
 import { NOTSEPARATENESS_DEFINITION } from "../prompts/definitions/15_notSeparateness_definition.mjs"
 
+/**
+ * Merges all the imported definitions into the main prompt.
+ * @param {string} prompt - The main prompt to be merged with definitions.
+ * @returns {string} The merged prompt with all definitions included.
+ */
 function mergeDefinitions(prompt) {
 	console.log("Merging definitions")
 	const mergedPrompt = prompt.replace("{{1-definition}}", LEVELSOFSCALE_DEFINITION).replace("{{2-definition}}", STRONGCENTERS_DEFINITION).replace("{{3-definition}}", BOUNDARIES_DEFINITION).replace("{{4-definition}}", ALTERNATINGREPETITION_DEFINITION).replace("{{5-definition}}", POSITIVESPACE_DEFINITION).replace("{{6-definition}}", GOODSHAPE_DEFINITION).replace("{{7-definition}}", LOCALSYMMETRIES_DEFINITION).replace("{{8-definition}}", DEEPINTERLOCKANDAMBIGUITY_DEFINITION).replace("{{9-definition}}", CONTRAST_DEFINITION).replace("{{10-definition}}", GRADIENTS_DEFINITION).replace("{{11-definition}}", ROUGHNESS_DEFINITION).replace("{{12-definition}}", ECHOES_DEFINITION).replace("{{13-definition}}", THEVOID_DEFINITION).replace("{{14-definition}}", SIMPLICITYANDINNERCALM_DEFINITION).replace("{{15-definition}}", NOTSEPARATENESS_DEFINITION)
@@ -23,6 +29,12 @@ function mergeDefinitions(prompt) {
 	return mergedPrompt
 }
 
+/**
+ * Generates a Chain of Thought (COT) analysis for a given image URL using OpenAI's API.
+ * @param {string} imageUrl - The URL of the image to be analyzed.
+ * @returns {Promise<string>} The generated analysis text.
+ * @throws {Error} If the API key is not set or if the API request fails after max retries.
+ */
 async function generateCOTAnalysis(imageUrl) {
 	console.log("Starting COT analysis generation")
 	const apiKey = process.env.OPENAI_API_KEY
@@ -40,6 +52,7 @@ async function generateCOTAnalysis(imageUrl) {
 
 	console.log("Image URL:", imageUrl) // Log the image URL for debugging
 
+	// Prepare the messages for the API request
 	const messages = [
 		{ role: "system", content: systemPrompt },
 		{
@@ -54,6 +67,7 @@ async function generateCOTAnalysis(imageUrl) {
 	const maxRetries = 3
 	const retryDelay = 1000
 
+	// Retry loop for API requests
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		console.log(`Attempt ${attempt} of ${maxRetries}`)
 		try {
@@ -71,6 +85,7 @@ async function generateCOTAnalysis(imageUrl) {
 				}),
 			})
 
+			// Check for non-OK response and throw an error if necessary
 			if (!response.ok) {
 				const errorBody = await response.text()
 				console.error(`OpenAI API Error (${response.status}):`, errorBody)
